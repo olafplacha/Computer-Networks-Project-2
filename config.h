@@ -33,7 +33,7 @@ namespace options
     const char HELP = 'h';
 
     // Client-specific.
-    const char CLIENT_OPTSTRING[] = "d:hn:p:s";
+    const char CLIENT_OPTSTRING[] = "d:hn:p:s:";
     const char GUI_ADDRESS = 'd';
     const char PLAYER_NAME = 'n';
     const char PORT = 'p';

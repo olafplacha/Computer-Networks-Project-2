@@ -7,7 +7,7 @@
 
 static void exit_wrong_param(const char* program) 
 {
-    std::cerr << program << " " << usage::CLIENT_USAGE;
+    std::cerr << "Usage: " << program << " " << usage::CLIENT_USAGE;
     exit(EXIT_FAILURE);
 }
 
@@ -39,6 +39,14 @@ static uint64_t get_numerical_value(const char* s, std::string& message)
 template<typename T>
 T parse_numerical(const char* s, std::string&& message)
 {
+    if (s[0] == '\0') {
+        std::cerr << message << " cannot be parsed!\n";
+        exit(EXIT_FAILURE);
+    }
+    if (s[0] == '-') {
+        std::cerr << message << " cannot be negative!\n";
+        exit(EXIT_FAILURE);
+    }
     uint64_t t = get_numerical_value(s, message);
     validate_limit(t, std::numeric_limits<T>::max(), message);
     return (T) t;
@@ -48,7 +56,7 @@ void parse_address(std::string& addr, types::port_t& port, std::string s, std::s
 {
     auto pos = s.find_last_of(options::ADDRESS_DELIMITER);
     if (pos == std::string::npos) {
-        std::cerr << "Please provide correct " << message << " address.\n";
+        std::cerr << message << " address cannot be parsed!\n";
         exit(EXIT_FAILURE);
     }
     addr = s.substr(0, pos);
@@ -79,10 +87,10 @@ options_client parse_client(int argc, char* argv[])
                 options.player_name = optarg;
                 break;
             case options::PORT:
-                options.port = parse_numerical<types::port_t>(optarg, "port");
+                options.port = parse_numerical<types::port_t>(optarg, "Port");
                 break;
             case options::SERVER_NAME:
-                parse_address(options.server_address, options.server_port, optarg, "server");
+                parse_address(options.server_address, options.server_port, optarg, "Server");
                 break;
             case options::HELP:
                 exit_help();

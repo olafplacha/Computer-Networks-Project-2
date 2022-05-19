@@ -14,7 +14,7 @@ int main(int argc, char* argv[])
         {"SERVER_NAME", 's'},
     };
 
-    
+    std::cout << REQUIRED_OPTIONS.at("GUI_ADDRESS") << '\n';
 
     std::cout << std::numeric_limits<types::bomb_timer_t>::max() << '\n';
     return 0;

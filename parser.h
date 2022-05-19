@@ -2,6 +2,7 @@
 #define PARSER_H
 
 #include <string>
+#include <unistd.h>
 #include "config.h"
 
 struct options_client

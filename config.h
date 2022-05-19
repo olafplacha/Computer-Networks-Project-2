@@ -29,15 +29,16 @@ namespace usage
 
 namespace options
 {
+    // Common.
+    const char HELP = 'h';
+
     // Client-specific.
     const char CLIENT_OPTSTRING[] = "d:hn:p:s";
-    const std::map<std::string, char> REQUIRED_OPTIONS = {
-        {"GUI_ADDRESS", 'd'},
-        {"PLAYER_NAME", 'n'},
-        {"PORT", 'p'},
-        {"SERVER_NAME", 's'},
-    };
-    const char HELP = 'h';
+    const char GUI_ADDRESS = 'd';
+    const char PLAYER_NAME = 'n';
+    const char PORT = 'p';
+    const char SERVER_NAME = 's';
+    const int REQUIRED = 4;
     const char ADDRESS_DELIMITER = ':';
 }
 

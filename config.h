@@ -38,7 +38,7 @@ namespace options
     const char PLAYER_NAME = 'n';
     const char PORT = 'p';
     const char SERVER_NAME = 's';
-    const int REQUIRED = 4;
+    const int CLIENT_REQUIRED = 4;
     const char ADDRESS_DELIMITER = ':';
 }
 

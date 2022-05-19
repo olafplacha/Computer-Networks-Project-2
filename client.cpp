@@ -1,21 +1,20 @@
 #include <iostream>
-// #include "parser.h"
+#include "parser.h"
 #include <limits>
 #include <map>
 #include "config.h"
-
+#include <string>
 
 int main(int argc, char* argv[]) 
 {
-    const std::map<std::string, char> REQUIRED_OPTIONS = {
-        {"GUI_ADDRESS", 'd'},
-        {"PLAYER_NAME", 'n'},
-        {"PORT", 'p'},
-        {"SERVER_NAME", 's'},
-    };
 
-    std::cout << REQUIRED_OPTIONS.at("GUI_ADDRESS") << '\n';
+    options_client op = parse_client(argc, argv);
+    std::cout << op.gui_address << '\n';
+    std::cout << op.gui_port << '\n';
+    std::cout << op.player_name << '\n';
+    std::cout << op.port << '\n';
+    std::cout << op.server_address << '\n';
+    std::cout << op.server_port << '\n';
 
-    std::cout << std::numeric_limits<types::bomb_timer_t>::max() << '\n';
     return 0;
 }

@@ -28,7 +28,10 @@ int main(int argc, char* argv[])
     hints.ai_protocol = IPPROTO_UDP;
 
     struct addrinfo *address_result;
-    getaddrinfo(op.gui_address.c_str(), NULL, &hints, &address_result);
+    if (getaddrinfo(op.gui_address.c_str(), NULL, &hints, &address_result) != 0) {
+        std::cout << "LIPA\n";
+        exit(EXIT_FAILURE);
+    }
 
 
     struct addrinfo *p;

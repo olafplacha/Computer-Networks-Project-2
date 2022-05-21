@@ -37,7 +37,7 @@ static uint64_t get_numerical_value(const char* s, std::string& message)
 }
 
 template<typename T>
-T parse_numerical(const char* s, std::string&& message)
+static T parse_numerical(const char* s, std::string&& message)
 {
     if (s[0] == '\0') {
         std::cerr << message << " cannot be parsed!\n";
@@ -52,7 +52,7 @@ T parse_numerical(const char* s, std::string&& message)
     return (T) t;
 }
 
-void parse_address(std::string& addr, types::port_t& port, std::string s, std::string&& message)
+static void parse_address(std::string& addr, types::port_t& port, std::string s, std::string&& message)
 {
     auto pos = s.find_last_of(options::ADDRESS_DELIMITER);
     if (pos == std::string::npos) {

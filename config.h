@@ -1,24 +1,25 @@
-#ifndef COMMON_H
-#define COMMON_H
+#ifndef CONFIG_H
+#define CONFIG_H
 
 #include <inttypes.h>
-#include <map>
 #include <string>
 
 namespace types
 {
-    // Common.
     using port_t = uint16_t;
 
-    // Server-specific.
     using bomb_timer_t = uint16_t;
+    using bomb_id_t = uint32_t;
     using players_count_t = uint8_t;
+    using player_id_t = uint8_t;
     using turn_duration_t = uint64_t;
     using explosion_radius_t = uint16_t;
     using initial_blocks_t = uint16_t;
     using game_length_t = uint16_t;
     using seed_t = uint32_t;
     using size_xy_t = uint16_t;
+    using turn_t = uint16_t;
+    using score_t = uint32_t;
 }
 
 namespace usage
@@ -42,4 +43,4 @@ namespace options
     const char ADDRESS_DELIMITER = ':';
 }
 
-#endif
+#endif // CONFIG_H

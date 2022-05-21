@@ -17,4 +17,4 @@ struct options_client
 
 options_client parse_client(int argc, char* argv[]);
 
-#endif
+#endif // PARSER_H

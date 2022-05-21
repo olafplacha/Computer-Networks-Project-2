@@ -1,14 +1,16 @@
 #include <iostream>
-#include "parser.h"
 #include <limits>
 #include <map>
-#include "config.h"
 #include <string>
 #include <arpa/inet.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netdb.h>
 #include <cstring>
+
+#include "config.h"
+#include "messages.h"
+#include "parser.h"
 
 int main(int argc, char* argv[]) 
 {
@@ -20,6 +22,12 @@ int main(int argc, char* argv[])
     std::cout << op.port << '\n';
     std::cout << op.server_address << '\n';
     std::cout << op.server_port << '\n';
+
+    const char* napis = op.player_name.c_str();
+    int i = 0;
+    while (napis[i] != '\0') {
+        std::cout << (int) (uint8_t) napis[i++] << '\n';
+    }
     
     struct addrinfo hints;
     memset(&hints, 0, sizeof hints);

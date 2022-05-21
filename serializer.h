@@ -6,11 +6,35 @@
 // Client-specific.
 
 /**
- * Returns server's message sent over TCP connection.
+ * Read server's message sent over TCP connection.
  *
- * @param socket Socket file descriptor.
+ * @param socket TCP socket file descriptor.
  * @return server's message.
  */
-ServerMessage readServerMessage(int socket);
+ServerMessage readClientServerMessage(int socket);
+
+/**
+ * Send message to server over TCP connection.
+ *
+ * @param message Message to be sent.
+ * @param socket TCP socket file descriptor.
+ */
+void sendClientServerMessage(ClientMessage& message, int socket);
+
+/**
+ * Read GUI's message sent over UDP connection.
+ *
+ * @param socket UDP socket file descriptor.
+ */
+InputMessage readClientGUIMessage(int socket);
+
+/**
+ * Read GUI's message sent over UDP connection.
+ *
+ * @param socket UDP socket file descriptor. The socket should be connected with GUI.
+ */
+void sendClientGUIMessage(DrawMessage& message, int socket);
+
+
 
 #endif // SERIALIZER_H

@@ -5,6 +5,7 @@
 #include <iostream>
 #include <cerrno>
 #include <cstring>
+#include <unistd.h>
 #include "network_handler.h"
 
 int TCPHandler::set_up_tcp_connection(std::string& address, types::port_t port)
@@ -75,6 +76,10 @@ TCPHandler::TCPHandler(std::string& address, types::port_t port, size_t recv_buf
 TCPHandler::~TCPHandler()
 {
     free(recv_buff);
+    if(close(socket_fd) == -1) {
+        std::cerr << std::strerror(errno) << '\n';
+        exit(EXIT_FAILURE);
+    }
 }
 
 bool TCPHandler::return_when_n_bytes_in_deque(size_t n)
@@ -113,4 +118,18 @@ bool TCPHandler::read_n_bytes(size_t n, char* buff)
         recv_deque.pop_front();
     }
     return true;
+}
+
+void TCPHandler::send_n_bytes(size_t n, char* buff)
+{
+    // Send until there are no bytes to be sent.
+    while (n > 0) {
+        ssize_t bytes_sent = send(socket_fd, buff, n, 0);
+        if (bytes_sent == -1) {
+            std::cerr << std::strerror(errno) << '\n';
+            exit(EXIT_FAILURE);
+        }
+        n -= bytes_sent;
+        buff += bytes_sent;
+    }
 }

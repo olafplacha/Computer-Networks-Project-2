@@ -42,6 +42,14 @@ class TCPHandler {
          * @return false if the peer disconnected.
          */ 
         bool read_n_bytes(size_t n, char* buff);
+        
+        /**
+         * @brief Send N bytes from the buffer.
+         * 
+         * @param n Number of bytes to send.
+         * @param buff Pointer to data to be sent.
+         */
+        void send_n_bytes(size_t n, char* buff);
 
         // Delete copy constructor and copy assignment.
         TCPHandler(TCPHandler const&) = delete;

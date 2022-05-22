@@ -6,34 +6,34 @@
 // Client-specific.
 
 /**
- * Read server's message sent over TCP connection.
+ * @brief Read server's message sent over TCP connection.
  *
  * @param socket TCP socket file descriptor.
  * @return server's message.
  */
-ServerMessage readClientServerMessage(int socket);
+ServerMessage read_client_server_message(int socket);
 
 /**
- * Send message to server over TCP connection.
+ * @brief Send message to server over TCP connection.
  *
  * @param message Message to be sent.
  * @param socket TCP socket file descriptor.
  */
-void sendClientServerMessage(ClientMessage& message, int socket);
+void send_client_server_message(ClientMessage& message, int socket);
 
 /**
- * Read GUI's message sent over UDP connection.
+ * @brief Read GUI's message sent over UDP connection.
  *
  * @param socket UDP socket file descriptor.
  */
-InputMessage readClientGUIMessage(int socket);
+InputMessage read_client_gui_message(int socket);
 
 /**
- * Read GUI's message sent over UDP connection.
+ * @brief Read GUI's message sent over UDP connection.
  *
  * @param socket UDP socket file descriptor. The socket should be connected with GUI.
  */
-void sendClientGUIMessage(DrawMessage& message, int socket);
+void send_client_gui_message(DrawMessage& message, int socket);
 
 
 

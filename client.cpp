@@ -11,6 +11,7 @@
 #include "config.h"
 #include "messages.h"
 #include "parser.h"
+#include "network_handler.h"
 
 int main(int argc, char* argv[]) 
 {

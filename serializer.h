@@ -2,16 +2,17 @@
 #define SERIALIZER_H
 
 #include "messages.h"
+#include "network_handler.h"
 
 // Client-specific.
 
 /**
  * @brief Read server's message sent over TCP connection.
  *
- * @param socket TCP socket file descriptor.
+ * @param handler Instance of TCPHandler that communicates with the server.
  * @return server's message.
  */
-ServerMessage read_client_server_message(int socket);
+ServerMessage read_client_server_message(TCPHandler& handler);
 
 /**
  * @brief Send message to server over TCP connection.

@@ -51,9 +51,9 @@ int TCPHandler::set_up_tcp_connection(std::string& address, types::port_t port)
     return fd;
 }
 
-char* TCPHandler::allocate_buffer_space(size_t n)
+uint8_t* TCPHandler::allocate_buffer_space(size_t n)
 {
-    char* buff_ptr = (char *) malloc(n);
+    uint8_t* buff_ptr = (uint8_t *) malloc(n);
     if (buff_ptr == NULL) {
         exit(EXIT_FAILURE);
     }
@@ -105,7 +105,7 @@ bool TCPHandler::return_when_n_bytes_in_deque(size_t n)
     return true;
 }
 
-bool TCPHandler::read_n_bytes(size_t n, char* buff)
+bool TCPHandler::read_n_bytes(size_t n, uint8_t* buff)
 {
     bool connected = return_when_n_bytes_in_deque(n);
     if (!connected) {
@@ -120,7 +120,7 @@ bool TCPHandler::read_n_bytes(size_t n, char* buff)
     return true;
 }
 
-void TCPHandler::send_n_bytes(size_t n, char* buff)
+void TCPHandler::send_n_bytes(size_t n, uint8_t* buff)
 {
     // Send until there are no bytes to be sent.
     while (n > 0) {

@@ -12,6 +12,7 @@
 #include "messages.h"
 #include "parser.h"
 #include "network_handler.h"
+#include "serializer.cpp"
 
 int main(int argc, char* argv[]) 
 {
@@ -24,18 +25,35 @@ int main(int argc, char* argv[])
     std::cout << op.server_address << '\n';
     std::cout << op.server_port << '\n';
 
-    char buff[1000];
-    memcpy(buff, op.player_name.c_str(), op.player_name.size());
-    TCPHandler tcp_handler(op.server_address, op.server_port, 1000);
-    tcp_handler.send_n_bytes(op.player_name.size(), buff);
-    std::cout << "size: " << op.player_name.size() << '\n';
-    std::cout << "sent my name!\n";
+    uint8_t* buff = (uint8_t *) malloc(100);
+    buff[0] = 1;
+    buff[1] = 2;
+    buff[2] = 3;
+    std::cout << "----------------\n";
+    for (size_t i = 0; i < 5; i++)
+    {
+        std::cout << i << ": " << (unsigned) buff[i] << '\n';
+    }
+    
+    convert_network_to_host_byte_order(buff, 8);
+    std::cout << "----------------\n";
+    for (size_t i = 0; i < 10; i++)
+    {
+        std::cout << i << ": " << (unsigned) buff[i] << '\n';
+    }
 
-    size_t N = op.player_name.size()+1;
-    tcp_handler.read_n_bytes(N, buff);
-    buff[N] = '\0';
-    std::cout << "read my name!\n";
-    std::cout << "buff: " << buff << '\n';
+    // char buff[1000];
+    // memcpy(buff, op.player_name.c_str(), op.player_name.size());
+    // TCPHandler tcp_handler(op.server_address, op.server_port, 1000);
+    // tcp_handler.send_n_bytes(op.player_name.size(), buff);
+    // std::cout << "size: " << op.player_name.size() << '\n';
+    // std::cout << "sent my name!\n";
+
+    // size_t N = 4*op.player_name.size();
+    // tcp_handler.read_n_bytes(N, buff);
+    // buff[N] = '\0';
+    // std::cout << "read my name!\n";
+    // std::cout << "buff: " << buff << '\n';
 
     // const char* napis = op.player_name.c_str();
     // int i = 0;

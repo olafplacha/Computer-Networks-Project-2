@@ -8,6 +8,7 @@ namespace types
 {
     using port_t = uint16_t;
 
+    using message_id_t = uint8_t;
     using bomb_timer_t = uint16_t;
     using bomb_id_t = uint32_t;
     using players_count_t = uint8_t;
@@ -20,6 +21,8 @@ namespace types
     using size_xy_t = uint16_t;
     using turn_t = uint16_t;
     using score_t = uint32_t;
+
+    const int MAX_SIZE = 8;
 }
 
 namespace usage

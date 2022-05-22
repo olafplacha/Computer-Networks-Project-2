@@ -3,6 +3,7 @@
 
 #include <deque>
 #include <string>
+#include <inttypes.h>
 #include "config.h"
 
 /**
@@ -33,15 +34,15 @@ class TCPHandler {
         ~TCPHandler();
 
         /**
-         * @brief Read subsequent N bytes from the TCP stream. Note that this method performs 
-         * a read on the socket only if it has to.
+         * @brief Read subsequent N bytes from the TCP stream and put them into the provided buffer. 
+         * Note that this method performs a read on the socket only if it has to.
          * 
          * @param n Number of bytes to be read.
          * @param buff Pointer to buffer of size at least N in which read bytes are returned.
          * @return true if the read was successful.
          * @return false if the peer disconnected.
          */ 
-        bool read_n_bytes(size_t n, char* buff);
+        bool read_n_bytes(size_t n, uint8_t* buff);
         
         /**
          * @brief Send N bytes from the buffer.
@@ -49,7 +50,7 @@ class TCPHandler {
          * @param n Number of bytes to send.
          * @param buff Pointer to data to be sent.
          */
-        void send_n_bytes(size_t n, char* buff);
+        void send_n_bytes(size_t n, uint8_t* buff);
 
         // Delete copy constructor and copy assignment.
         TCPHandler(TCPHandler const&) = delete;
@@ -57,7 +58,7 @@ class TCPHandler {
 
     private:
         int socket_fd;
-        char *recv_buff;
+        uint8_t *recv_buff;
         size_t recv_buff_size;
         std::deque<char> recv_deque;
 
@@ -76,7 +77,7 @@ class TCPHandler {
          * @param n Size of the buffer.
          * @return char* Pointer to the buffer.
          */
-        char* allocate_buffer_space(size_t n);
+        uint8_t* allocate_buffer_space(size_t n);
 
         /**
          * @brief Reads from the TCP stream as long as there are not enough bytes in recv_deque.

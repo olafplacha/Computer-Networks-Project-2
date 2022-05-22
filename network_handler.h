@@ -2,20 +2,33 @@
 #define NETWORK_HANDLER_H
 
 #include <deque>
+#include <string>
+#include "config.h"
 
 /**
- * @brief Class wrapping reading and writing on a TCP socket.
+ * @brief Class wrapping reading and writing on a TCP socket. Objects of this class can be
+ * instantiated providing previously created socket or by providing name and port of the 
+ * server, with which connection will be established during object construction.
  * 
  */
 class TCPHandler {
     public:
         /**
-         * @brief Construct a new TCPHandler object.
+         * @brief Construct a new TCPHandler object using previously created socket.
          * 
-         * @param socket_ Connected TCP socket file descriptor.
+         * @param socket_fd_ Connected TCP socket file descriptor.
          * @param recv_buff_size_ Size of the receive buffer.
          */
-        TCPHandler(int socket_, size_t recv_buff_size_);
+        TCPHandler(int socket_fd_, size_t recv_buff_size_);
+
+        /**
+         * @brief Construct a new TCPHandler object using provided address and port of the server.
+         * 
+         * @param address Address of the server.
+         * @param port Port of the server.
+         * @param recv_buff_size_ Size of the receive buffer.
+         */
+        TCPHandler(std::string& address, types::port_t port, size_t recv_buff_size_);
 
         ~TCPHandler();
 
@@ -35,10 +48,27 @@ class TCPHandler {
         void operator=(TCPHandler const&) = delete;
 
     private:
-        int socket;
+        int socket_fd;
         char *recv_buff;
         size_t recv_buff_size;
         std::deque<char> recv_deque;
+
+        /**
+         * @brief Sets up a TCP connection. Sets TCP_NODELAY option for instant message outbound.
+         * 
+         * @param address Address of the server.
+         * @param port Port of the server.
+         * @return int File descriptor of the connected socket.
+         */
+        int set_up_tcp_connection(std::string& address, types::port_t port);
+
+        /**
+         * @brief Allocates space for a buffer.
+         * 
+         * @param n Size of the buffer.
+         * @return char* Pointer to the buffer.
+         */
+        char* allocate_buffer_space(size_t n);
 
         /**
          * @brief Reads from the TCP stream as long as there are not enough bytes in recv_deque.

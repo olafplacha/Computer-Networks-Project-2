@@ -37,7 +37,7 @@ class TCPHandler {
          * @brief Read subsequent n bytes from the TCP stream, convert endianness if needed and
          * put the bytes into the provided buffer. Because of endianness convertion, the method
          * supports only 1, 2, 4 and 8 as the value of n. Moreover, note that this method 
-         * performs a read on the socket only if it has to.
+         * performs a read on the socket only if it has to (lazily).
          * 
          * @param n Number of bytes to be read.
          * @param buff Pointer to buffer of size at least N in which read bytes are returned.

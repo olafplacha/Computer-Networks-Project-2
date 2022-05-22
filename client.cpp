@@ -12,7 +12,7 @@
 #include "messages.h"
 #include "parser.h"
 #include "network_handler.h"
-#include "serializer.cpp"
+#include "serializer.h"
 
 int main(int argc, char* argv[]) 
 {
@@ -25,22 +25,22 @@ int main(int argc, char* argv[])
     std::cout << op.server_address << '\n';
     std::cout << op.server_port << '\n';
 
-    uint8_t* buff = (uint8_t *) malloc(100);
-    buff[0] = 1;
-    buff[1] = 2;
-    buff[2] = 3;
-    std::cout << "----------------\n";
-    for (size_t i = 0; i < 5; i++)
-    {
-        std::cout << i << ": " << (unsigned) buff[i] << '\n';
-    }
+    // uint8_t* buff = (uint8_t *) malloc(100);
+    // buff[0] = 1;
+    // buff[1] = 2;
+    // buff[2] = 3;
+    // std::cout << "----------------\n";
+    // for (size_t i = 0; i < 5; i++)
+    // {
+    //     std::cout << i << ": " << (unsigned) buff[i] << '\n';
+    // }
     
-    convert_network_to_host_byte_order(buff, 8);
-    std::cout << "----------------\n";
-    for (size_t i = 0; i < 10; i++)
-    {
-        std::cout << i << ": " << (unsigned) buff[i] << '\n';
-    }
+    // convert_network_to_host_byte_order(buff, 8);
+    // std::cout << "----------------\n";
+    // for (size_t i = 0; i < 10; i++)
+    // {
+    //     std::cout << i << ": " << (unsigned) buff[i] << '\n';
+    // }
 
     // char buff[1000];
     // memcpy(buff, op.player_name.c_str(), op.player_name.size());

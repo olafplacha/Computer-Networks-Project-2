@@ -34,8 +34,10 @@ class TCPHandler {
         ~TCPHandler();
 
         /**
-         * @brief Read subsequent N bytes from the TCP stream and put them into the provided buffer. 
-         * Note that this method performs a read on the socket only if it has to.
+         * @brief Read subsequent n bytes from the TCP stream, convert endianness if needed and
+         * put the bytes into the provided buffer. Because of endianness convertion, the method
+         * supports only 1, 2, 4 and 8 as the value of n. Moreover, note that this method 
+         * performs a read on the socket only if it has to.
          * 
          * @param n Number of bytes to be read.
          * @param buff Pointer to buffer of size at least N in which read bytes are returned.
@@ -45,12 +47,15 @@ class TCPHandler {
         bool read_n_bytes(size_t n, uint8_t* buff);
         
         /**
-         * @brief Send N bytes from the buffer.
+         * @brief Convert endianness if needed and send n bytes from the buffer. Because of 
+         * endianness convertion, the method supports only 1, 2, 4 and 8 as the value of n.
          * 
          * @param n Number of bytes to send.
          * @param buff Pointer to data to be sent.
+         * @return true if the send was successful.
+         * @return false if the peer disconnected.
          */
-        void send_n_bytes(size_t n, uint8_t* buff);
+        bool send_n_bytes(size_t n, uint8_t* buff);
 
         // Delete copy constructor and copy assignment.
         TCPHandler(TCPHandler const&) = delete;

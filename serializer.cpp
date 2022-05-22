@@ -4,51 +4,49 @@
 #include "serializer.h"
 #include "config.h"
 
-/**
- * @brief Converts n first bytes of the buffer from network to host byte order.
- * 
- * @param buffer Pointer to buffer with data.
- * @param n Number of bytes to convert.
- */
-void convert_network_to_host_byte_order(uint8_t* buffer, size_t n)
+void check_connection(bool connected)
 {
-    switch (n)
-    {
-    case 1:
-        // Nothing to be done.
-        return;   
-    case 2:
-    {
-        uint16_t before = *(uint16_t *) buffer;
-        uint16_t after = ntohs(before);
-        *(uint16_t *) buffer = after;
-        return;
+    if (!connected) {
+        std::cerr << "Server disconnected!\n";
+        exit(EXIT_FAILURE);
     }
-    case 4:
-    {
-        uint32_t before = *(uint32_t *) buffer;
-        uint32_t after = ntohl(before);
-        *(uint32_t *) buffer = after;
-        return;
-    }
-    case 8:
-    {
-        uint64_t before = *(uint64_t *) buffer;
-        uint64_t after = be64toh(before);
-        *(uint64_t *) buffer = after;
-        return;
-    }
-    default:
-        // Unreachable.
-        return;
-    }
+}
+
+Hello read_hello_message(TCPHandler& handler)
+{
+    
 }
 
 ServerMessage read_client_server_message(TCPHandler& handler)
 {
     uint8_t buffer[types::MAX_SIZE];
-    bool connected_to_server;
 
-    connected_to_server = handler.read_n_bytes(sizeof(types::message_id_t), buffer);
+    bool connected_to_server = handler.read_n_bytes(sizeof(types::message_id_t), buffer);
+    check_connection(connected_to_server);
 
+    types::message_id_t message_id = *(types::message_id_t *) buffer;
+
+    switch (message_id)
+    {
+    case 0:
+        
+        break;
+    case 1:
+
+        break;
+    case 2:
+
+        break;
+
+    case 3:
+
+        break;
+
+    case 4:
+
+        break;
+    default:
+        // Wrong message id.
+        break;
+    }
 }

@@ -22,6 +22,10 @@ namespace types
     using turn_t = uint16_t;
     using score_t = uint32_t;
 
+    using str_len_t = uint8_t;
+    using map_len_t = uint32_t;
+    using vec_len_t = uint32_t;
+
     const int MAX_SIZE = 8;
 }
 

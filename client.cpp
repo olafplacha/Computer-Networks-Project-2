@@ -26,14 +26,15 @@ int main(int argc, char* argv[])
     // std::cout << op.server_port << '\n';
 
     uint8_t buff[100] = {0, 49, 240, 159, 145, 169, 240, 159, 143, 188, 226, 128, 141, 240, 159, 145, 169, 240, 159, 143, 188, 226, 128, 141, 240, 159, 145, 167, 240, 159, 143, 188, 226, 128, 141, 240, 159, 145, 166, 240, 159, 143, 188, 240, 159, 135, 181, 240, 159, 135, 177, 99, 70, 10, 0, 10, 0, 69, 0, 1, 0, 2};
-    {TCPHandler tcp_handler(op.server_address, op.server_port, 1000);
-    for (size_t i = 0; i < 100; i++)
+    TCPHandler tcp_handler(op.server_address, op.server_port, 1000);
+    for (size_t i = 0; i < 64; i++)
     {
         // std::cout << (unsigned) buff[i] << '\n';
         tcp_handler.send_n_bytes(1, buff+i);
     }
     
     ServerMessage mess = read_client_server_message(tcp_handler);
+    std::cout << "Read first mess\n";
     std::cout << "-------------------\n\n";
     Hello h = std::get<Hello>(mess);
     std::cout << h.server_name << '\n';
@@ -49,7 +50,6 @@ int main(int argc, char* argv[])
     std::cout << (unsigned) h.explosion_radius << '\n';
     std::cout << "-------------------\n\n";
     std::cout << (unsigned) h.bomber_timer << '\n';
-    }
 
     // uint8_t* buff = (uint8_t *) malloc(100);
     // buff[0] = 1;

@@ -99,30 +99,26 @@ int TCPHandler::set_up_tcp_connection(std::string& address, types::port_t port)
     // Resolve the address.
     err = getaddrinfo(address.c_str(), std::to_string(port).c_str(), &hints, &res);
     if (err != 0) {
-        std::cerr << gai_strerror(err) << '\n';
-        exit(EXIT_FAILURE);
+        throw std::runtime_error(gai_strerror(err));
     }
 
-    // Create a TCP socket.
+    // Create a TCP sockessst.
     int fd = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
-    if (fd < 0) {
-        std::cerr << std::strerror(errno) << '\n';
-        exit(EXIT_FAILURE);
+    if (fd == -1) {
+        throw std::runtime_error(std::strerror(errno));
     }
 
     // Connect to the server.
     err = connect(fd, res->ai_addr, res->ai_addrlen);
     if (err != 0) {
-        std::cerr << std::strerror(errno) << '\n';
-        exit(EXIT_FAILURE);
+        throw std::runtime_error(std::strerror(errno));
     }
 
     // Disable Nagle's algorithm.
     int flag = 1;
     err = setsockopt(fd, IPPROTO_TCP, TCP_NODELAY, (char *) &flag, sizeof(int));
-    if (err < 0) {
-        std::cerr << std::strerror(errno) << '\n';
-        exit(EXIT_FAILURE);
+    if (err != 0) {
+        throw std::runtime_error(std::strerror(errno));
     }
 
     freeaddrinfo(res);
@@ -160,19 +156,17 @@ TCPHandler::~TCPHandler()
     }
 }
 
-bool TCPHandler::return_when_n_bytes_in_deque(size_t n)
+void TCPHandler::return_when_n_bytes_in_deque(size_t n)
 {
     // If there are enough bytes in the recv_deque, then do not read on the socket.
     while (recv_deque.size() < n) {
         ssize_t received_bytes = recv(socket_fd, recv_buff, recv_buff_size, 0);
-        // Check if read successful.
-        if (received_bytes < 0) {
-            std::cerr << std::strerror(errno) << '\n';
-            exit(EXIT_FAILURE);
-        }
-        // Check if peer disconnected.
         if (received_bytes == 0) {
-            return false;
+            throw TCPError("Peer disconnected!");
+        }
+        else if (received_bytes < 0) {
+            // Some error occured.
+            throw TCPError(std::strerror(errno));
         }
         // Copy all read bytes to recv_deque.
         for (ssize_t i = 0; i < received_bytes; i++)
@@ -180,27 +174,23 @@ bool TCPHandler::return_when_n_bytes_in_deque(size_t n)
             recv_deque.push_back(recv_buff[i]);
         }
     }
-    return true;
 }
 
-bool TCPHandler::read_n_bytes(size_t n, uint8_t* buff)
+void TCPHandler::read_n_bytes(size_t n, uint8_t* buff)
 {
-    bool connected = return_when_n_bytes_in_deque(n);
-    if (!connected) {
-        return false;
-    }
+    return_when_n_bytes_in_deque(n);
     // At this point there are at least n bytes in the deque.
     for (size_t i = 0; i < n; i++)
     {
+        // Copy n bytes from recv_deque to the buffer.
         buff[i] = recv_deque.front();
         recv_deque.pop_front();
     }
     // Convert the endianness if needed.
     convert_network_to_host_byte_order(buff, n);
-    return true;
 }
 
-bool TCPHandler::send_n_bytes(size_t n, uint8_t* buff)
+void TCPHandler::send_n_bytes(size_t n, uint8_t* buff)
 {
     // Convert the endianness if needed.
     convert_host_to_network_byte_order(buff, n);
@@ -210,17 +200,9 @@ bool TCPHandler::send_n_bytes(size_t n, uint8_t* buff)
         ssize_t bytes_sent = send(socket_fd, buff, n, 0);
         if (bytes_sent == -1) {
             // Some error occured.
-            if (errno == ECONNRESET) {
-                // Connection reset by peer.
-                return false;
-            }
-            else {
-                std::cerr << std::strerror(errno) << '\n';
-                exit(EXIT_FAILURE);
-            }
+            throw TCPError(std::strerror(errno));
         }
         n -= bytes_sent;
         buff += bytes_sent;
     }
-    return true;
 }

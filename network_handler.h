@@ -4,7 +4,13 @@
 #include <deque>
 #include <string>
 #include <inttypes.h>
+#include <stdexcept>
 #include "config.h"
+
+class TCPError: public std::runtime_error {
+    public:
+        TCPError(const char* w) : std::runtime_error(w) {}
+};
 
 /**
  * @brief Class wrapping reading and writing on a TCP socket. Objects of this class can be
@@ -41,10 +47,9 @@ class TCPHandler {
          * 
          * @param n Number of bytes to be read.
          * @param buff Pointer to buffer of size at least N in which read bytes are returned.
-         * @return true if the read was successful.
-         * @return false if the peer disconnected.
+         * @throws TCPError.
          */ 
-        bool read_n_bytes(size_t n, uint8_t* buff);
+        void read_n_bytes(size_t n, uint8_t* buff);
         
         /**
          * @brief Convert endianness if needed and send n bytes from the buffer. Because of 
@@ -52,10 +57,9 @@ class TCPHandler {
          * 
          * @param n Number of bytes to send.
          * @param buff Pointer to data to be sent.
-         * @return true if the send was successful.
-         * @return false if the peer disconnected.
+         * @throws TCPError.
          */
-        bool send_n_bytes(size_t n, uint8_t* buff);
+        void send_n_bytes(size_t n, uint8_t* buff);
 
         // Delete copy constructor and copy assignment.
         TCPHandler(TCPHandler const&) = delete;
@@ -88,10 +92,9 @@ class TCPHandler {
          * @brief Reads from the TCP stream as long as there are not enough bytes in recv_deque.
          * 
          * @param n Minimum number of bytes in recv_deque when returning.
-         * @return true if the read was successful.
-         * @return false if the peer disconnected.
+         * @throws TCPError.
          */
-        bool return_when_n_bytes_in_deque(size_t n);
+        void return_when_n_bytes_in_deque(size_t n);
 };
 
 #endif // NETWORK_HANDLER_H

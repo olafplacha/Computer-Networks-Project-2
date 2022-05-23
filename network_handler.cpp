@@ -150,6 +150,10 @@ TCPHandler::TCPHandler(std::string& address, types::port_t port, size_t recv_buf
 TCPHandler::~TCPHandler()
 {
     free(recv_buff);
+    if (shutdown(socket_fd, SHUT_WR) == -1) {
+        std::cerr << std::strerror(errno) << std::endl;
+        exit(EXIT_FAILURE);
+    }
     if(close(socket_fd) == -1) {
         std::cerr << std::strerror(errno) << std::endl;
         exit(EXIT_FAILURE);

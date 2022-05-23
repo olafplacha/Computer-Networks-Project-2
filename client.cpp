@@ -12,7 +12,6 @@
 #include "messages.h"
 #include "parser.h"
 #include "network_handler.h"
-#include "serializer.h"
 
 int main(int argc, char* argv[]) 
 {
@@ -33,7 +32,8 @@ int main(int argc, char* argv[])
         tcp_handler.send_n_bytes(1, buff+i);
     }
     
-    ServerMessage mess = read_client_server_message(tcp_handler);
+    ClientMessager client_messager(tcp_handler);
+    ServerMessage mess = client_messager.read_server_message();
 
     if (std::holds_alternative<Turn>(mess)) {
         std::cout << "Type ok!\n";

@@ -1,42 +1,27 @@
 #include <iostream>
 #include <inttypes.h>
 #include <arpa/inet.h>
-#include <utility>
 #include "serializer.h"
 #include "config.h"
 
-static std::pair<bool, std::string> read_string(TCPHandler& handler)
+static std::string read_string(TCPHandler& handler)
 {
     uint8_t buffer[types::MAX_SIZE];
 
     std::string s;
-    // Read string length.
-    bool connected = handler.read_n_bytes(1, buffer);
 
-    if (!connected) {
-        return {false, nullptr};
-    }
+    // Read string length.
+    handler.read_n_bytes(1, buffer);
 
     // Read all bytes of the string.
     uint8_t len = *(uint8_t *) buffer;
     for (size_t i = 0; i < len; i++)
     {
-        connected = handler.read_n_bytes(1, buffer);
-        if (!connected) {
-            return {false, nullptr};
-        }
+        handler.read_n_bytes(1, buffer);
         char c = *(char *) buffer;
         s.append(1, c);
     }
-    return {true, s};
-}
-
-static void client_check_connection(bool connected)
-{
-    if (!connected) {
-        std::cerr << "Server disconnected!\n";
-        exit(EXIT_FAILURE);
-    }
+    return s;
 }
 
 static Hello read_hello_message(TCPHandler& handler)
@@ -44,32 +29,25 @@ static Hello read_hello_message(TCPHandler& handler)
     uint8_t buffer[types::MAX_SIZE];
     Hello message;
 
-    auto [connected, s] = read_string(handler);
-    client_check_connection(connected);
+    std::string s = read_string(handler);
     message.server_name = s;
 
-    connected = handler.read_n_bytes(sizeof(types::players_count_t), buffer);
-    client_check_connection(connected);
+    handler.read_n_bytes(sizeof(types::players_count_t), buffer);
     message.players_count = *(types::players_count_t *) buffer;
 
-    connected = handler.read_n_bytes(sizeof(types::size_xy_t), buffer);
-    client_check_connection(connected);
+    handler.read_n_bytes(sizeof(types::size_xy_t), buffer);
     message.size_x = *(types::size_xy_t *) buffer;
 
-    connected = handler.read_n_bytes(sizeof(types::size_xy_t), buffer);
-    client_check_connection(connected);
+    handler.read_n_bytes(sizeof(types::size_xy_t), buffer);
     message.size_y = *(types::size_xy_t *) buffer;
 
-    connected = handler.read_n_bytes(sizeof(types::game_length_t), buffer);
-    client_check_connection(connected);
+    handler.read_n_bytes(sizeof(types::game_length_t), buffer);
     message.game_length = *(types::game_length_t *) buffer;
 
-    connected = handler.read_n_bytes(sizeof(types::explosion_radius_t), buffer);
-    client_check_connection(connected);
+    handler.read_n_bytes(sizeof(types::explosion_radius_t), buffer);
     message.explosion_radius = *(types::explosion_radius_t *) buffer;
 
-    connected = handler.read_n_bytes(sizeof(types::bomb_timer_t), buffer);
-    client_check_connection(connected);
+    handler.read_n_bytes(sizeof(types::bomb_timer_t), buffer);
     message.bomber_timer = *(types::bomb_timer_t *) buffer;
 
     return message;
@@ -115,9 +93,7 @@ ServerMessage read_client_server_message(TCPHandler& handler)
 {
     uint8_t buffer[types::MAX_SIZE];
 
-    bool connected_to_server = handler.read_n_bytes(sizeof(types::message_id_t), buffer);
-    client_check_connection(connected_to_server);
-
+    handler.read_n_bytes(sizeof(types::message_id_t), buffer);
     types::message_id_t message_id = *(types::message_id_t *) buffer;
 
     switch (message_id)
@@ -133,7 +109,6 @@ ServerMessage read_client_server_message(TCPHandler& handler)
     case 4:
         return read_game_ended_message(handler);
     default:
-        std::cerr << "Unknown message received from the server!\n";
-        exit(EXIT_FAILURE);
+        throw std::runtime_error("Unknown message received from the server!");
     }
 }

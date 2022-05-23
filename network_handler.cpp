@@ -43,7 +43,7 @@ static void convert_network_to_host_byte_order(uint8_t* buffer, size_t n)
         return;
     }
     default:
-        throw std::invalid_argument("invalid data type size");
+        throw std::invalid_argument("Invalid data type size for endianness convertion!");
     }
 }
 
@@ -82,7 +82,7 @@ static void convert_host_to_network_byte_order(uint8_t* buffer, size_t n)
         return;
     }
     default:
-        throw std::invalid_argument("invalid data type size");
+        throw std::invalid_argument("Invalid data type size for endianness convertion!");
     }
 }
 
@@ -129,7 +129,7 @@ uint8_t* TCPHandler::allocate_buffer_space(size_t n)
 {
     uint8_t* buff_ptr = (uint8_t *) malloc(n);
     if (buff_ptr == NULL) {
-        exit(EXIT_FAILURE);
+        throw std::runtime_error("Error occured when allocating space for a buffer!");
     }
     return buff_ptr;
 }
@@ -151,7 +151,7 @@ TCPHandler::~TCPHandler()
 {
     free(recv_buff);
     if(close(socket_fd) == -1) {
-        std::cerr << std::strerror(errno) << '\n';
+        std::cerr << std::strerror(errno) << std::endl;
         exit(EXIT_FAILURE);
     }
 }

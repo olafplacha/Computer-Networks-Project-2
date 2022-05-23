@@ -36,6 +36,4 @@ InputMessage read_client_gui_message(int socket);
  */
 void send_client_gui_message(DrawMessage& message, int socket);
 
-
-
 #endif // SERIALIZER_H

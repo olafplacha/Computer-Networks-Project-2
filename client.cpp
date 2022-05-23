@@ -25,31 +25,36 @@ int main(int argc, char* argv[])
     // std::cout << op.server_address << '\n';
     // std::cout << op.server_port << '\n';
 
-    uint8_t buff[100] = {0, 49, 240, 159, 145, 169, 240, 159, 143, 188, 226, 128, 141, 240, 159, 145, 169, 240, 159, 143, 188, 226, 128, 141, 240, 159, 145, 167, 240, 159, 143, 188, 226, 128, 141, 240, 159, 145, 166, 240, 159, 143, 188, 240, 159, 135, 181, 240, 159, 135, 177, 99, 70, 10, 0, 10, 0, 69, 0, 1, 0, 2};
+    uint8_t buff[100] = {3, 0, 44, 0, 0, 0, 3, 2, 3, 0, 2, 0, 4, 2, 4, 0, 3, 0, 5, 0, 0, 0, 0, 5, 0, 5, 0, 7};
+
     TCPHandler tcp_handler(op.server_address, op.server_port, 1000);
     for (size_t i = 0; i < 64; i++)
     {
-        // std::cout << (unsigned) buff[i] << '\n';
         tcp_handler.send_n_bytes(1, buff+i);
     }
     
     ServerMessage mess = read_client_server_message(tcp_handler);
-    std::cout << "Read first mess\n";
-    std::cout << "-------------------\n\n";
-    Hello h = std::get<Hello>(mess);
-    std::cout << h.server_name << '\n';
-    std::cout << "-------------------\n\n";
-    std::cout << (unsigned) h.players_count << '\n';
-    std::cout << "-------------------\n\n";
-    std::cout << (unsigned) h.size_x << '\n';
-    std::cout << "-------------------\n\n";
-    std::cout << (unsigned) h.size_y << '\n';
-    std::cout << "-------------------\n\n";
-    std::cout << (unsigned) h.game_length << '\n';
-    std::cout << "-------------------\n\n";
-    std::cout << (unsigned) h.explosion_radius << '\n';
-    std::cout << "-------------------\n\n";
-    std::cout << (unsigned) h.bomber_timer << '\n';
+
+    if (std::holds_alternative<Turn>(mess)) {
+        std::cout << "Type ok!\n";
+    }
+
+    // std::cout << "Read first mess\n";
+    // std::cout << "-------------------\n\n";
+    // Hello h = std::get<Hello>(mess);
+    // std::cout << h.server_name << '\n';
+    // std::cout << "-------------------\n\n";
+    // std::cout << (unsigned) h.players_count << '\n';
+    // std::cout << "-------------------\n\n";
+    // std::cout << (unsigned) h.size_x << '\n';
+    // std::cout << "-------------------\n\n";
+    // std::cout << (unsigned) h.size_y << '\n';
+    // std::cout << "-------------------\n\n";
+    // std::cout << (unsigned) h.game_length << '\n';
+    // std::cout << "-------------------\n\n";
+    // std::cout << (unsigned) h.explosion_radius << '\n';
+    // std::cout << "-------------------\n\n";
+    // std::cout << (unsigned) h.bomber_timer << '\n';
 
     // uint8_t* buff = (uint8_t *) malloc(100);
     // buff[0] = 1;

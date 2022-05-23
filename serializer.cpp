@@ -34,7 +34,7 @@ static std::map<K, V> read_map(TCPHandler& handler, std::function<K(TCPHandler&)
 }
 
 template<typename T>
-static std::vector<T> read_vector(TCPHandler& handler, std::function<T,(TCPHandler&)> f)
+static std::vector<T> read_vector(TCPHandler& handler, std::function<T(TCPHandler&)> f)
 {
     std::vector<T> v;
 
@@ -86,7 +86,31 @@ static BombExploded read_bomb_exploded(TCPHandler& handler)
 {
     BombExploded message;
 
-    message.id = read_element< // TODO: think about placing object creation closer to structs.
+    message.id = read_element<types::bomb_id_t>(handler);
+    message.robots_destroyed = read_vector<types::player_id_t>(handler, 
+        &read_element<types::player_id_t>);
+    message.blocks_destroyed = read_vector<Position>(handler, &read_position);
+
+    return message;
+}
+
+static PlayerMoved read_player_moved(TCPHandler& handler)
+{
+    PlayerMoved message;
+
+    message.id = read_element<types::player_id_t>(handler);
+    message.position = read_position(handler);
+
+    return message;
+}
+
+static BlockPlaced read_block_placed(TCPHandler& handler)
+{
+    BlockPlaced message;
+
+    message.position = read_position(handler);
+
+    return message;
 }
 
 static Event read_event(TCPHandler& handler)
@@ -158,7 +182,7 @@ static Turn read_turn_message(TCPHandler& handler)
     Turn message;
 
     message.turn = read_element<types::turn_t>(handler);
-    message.events = read_vector
+    message.events = read_vector<Event>(handler, &read_event);
 
     return message;
 }
@@ -167,7 +191,9 @@ static GameEnded read_game_ended_message(TCPHandler& handler)
 {
     GameEnded message;
 
-    // TODO.
+    message.scores = read_map<types::player_id_t, types::score_t>(handler, 
+        &read_element<types::player_id_t>, &read_element<types::score_t>);
+
     return message;
 }
 

@@ -1,8 +1,5 @@
 #include <functional>
 #include <inttypes.h>
-#include <string>
-#include <map>
-#include <vector>
 #include <variant>
 #include "messages.h"
 #include "config.h"
@@ -64,127 +61,65 @@ static std::string read_string(TCPHandler& handler)
     return s;
 }
 
-enum Direction { Up, Right, Left, Down };
+Hello::Hello(TCPHandler& handler)
+{
+    server_name = read_string(handler);
+    players_count = read_element<types::players_count_t>(handler);
+    size_x = read_element<types::size_xy_t>(handler);
+    size_y = read_element<types::size_xy_t>(handler);
+    game_length = read_element<types::game_length_t>(handler);
+    explosion_radius = read_element<types::explosion_radius_t>(handler);
+    bomber_timer = read_element<types::bomb_timer_t>(handler);
+}
 
-struct Join {
-    std::string name;
-};
+Player::Player(TCPHandler& handler)
+{
+    name = read_string(handler);
+    address = read_string(handler);
+}
 
-struct PlaceBomb {};
+AcceptedPlayer::AcceptedPlayer(TCPHandler& handler)
+{
+    id = read_element<types::player_id_t>(handler);
+    player = Player(handler);
+}
 
-struct PlaceBlock {};
+GameStarted::GameStarted(TCPHandler& handler)
+{
+    players = read_map<types::player_id_t, Player>(handler, read_element<types::player_id_t>, 
+        [&](TCPHandler& t){ return Player(t); });
+}
 
-struct Move {
-    Direction direction;
-};
+Position::Position(TCPHandler& handler)
+{
+    x = read_element<types::size_xy_t>(handler);
+    y = read_element<types::size_xy_t>(handler);
+}
 
-struct Hello {
-    std::string server_name;
-    types::players_count_t players_count;
-    types::size_xy_t size_x;
-    types::size_xy_t size_y;
-    types::game_length_t game_length;
-    types::explosion_radius_t explosion_radius;
-    types::bomb_timer_t bomber_timer;
+BombPlaced::BombPlaced(TCPHandler& handler)
+{
+    id = read_element<types::bomb_id_t>(handler);
+    position = Position(handler);
+}
 
-    Hello(TCPHandler& handler)
-    {
-        server_name = read_string(handler);
-        players_count = read_element<types::players_count_t>(handler);
-        size_x = read_element<types::size_xy_t>(handler);
-        size_y = read_element<types::size_xy_t>(handler);
-        game_length = read_element<types::game_length_t>(handler);
-        explosion_radius = read_element<types::explosion_radius_t>(handler);
-        bomber_timer = read_element<types::bomb_timer_t>(handler);
-    }
-};
+BombExploded::BombExploded(TCPHandler& handler)
+{
+    id = read_element<types::bomb_id_t>(handler);
+    robots_destroyed = read_vector<types::player_id_t>(handler, 
+        read_element<types::player_id_t>);
+    blocks_destroyed = read_vector<Position>(handler, [&](TCPHandler& t){ return Position(t); });
+}
 
-struct Player {
-    std::string name;
-    std::string address;
+PlayerMoved::PlayerMoved(TCPHandler& handler)
+{
+    id = read_element<types::player_id_t>(handler);
+    position = Position(handler);
+}
 
-    Player(TCPHandler& handler)
-    {
-        name = read_string(handler);
-        address = read_string(handler);
-    }
-};
-
-struct AcceptedPlayer {
-    types::player_id_t id;
-    Player player;
-
-    AcceptedPlayer(TCPHandler& handler)
-    {
-        id = read_element<types::player_id_t>(handler);
-        player = Player(handler);
-    }
-};
-
-struct GameStarted {
-    std::map<types::player_id_t, Player> players;
-
-    GameStarted(TCPHandler& handler)
-    {
-        players = read_map<types::player_id_t, Player>(handler, &read_element<types::player_id_t>, &Player);
-    }
-};
-
-struct Position {
-    types::size_xy_t x;
-    types::size_xy_t y;
-
-    Position(TCPHandler& handler)
-    {
-        x = read_element<types::size_xy_t>(handler);
-        y = read_element<types::size_xy_t>(handler);
-    }
-};
-
-struct BombPlaced {
-    types::bomb_id_t id;
-    Position position;
-
-    BlockPlaced(TCPHandler& handler)
-    {
-        id = read_element<types::bomb_id_t>(handler);
-        position = Position(handler);
-    }
-};
-
-struct BombExploded {
-    types::bomb_id_t id;
-    std::vector<types::player_id_t> robots_destroyed;
-    std::vector<Position> blocks_destroyed;
-
-    BombExploded(TCPHandler& handler)
-    {
-        id = read_element<types::bomb_id_t>(handler);
-        robots_destroyed = read_vector<types::player_id_t>(handler, 
-            &read_element<types::player_id_t>);
-        blocks_destroyed = read_vector<Position>(handler, &Position);
-    }
-};
-
-struct PlayerMoved {
-    types::player_id_t id;
-    Position position;
-
-    PlayerMoved(TCPHandler& handler)
-    {
-        id = read_element<types::player_id_t>(handler);
-        position = Position(handler);
-    }
-};
-
-struct BlockPlaced {
-    Position position;
-
-    BlockPlaced(TCPHandler& handler)
-    {
-        position = Position(handler);
-    }
-};
+BlockPlaced::BlockPlaced(TCPHandler& handler)
+{
+    position = Position(handler);
+}
 
 using Event = std::variant<BombPlaced, BombExploded, PlayerMoved, BlockPlaced>;
 
@@ -207,60 +142,21 @@ static Event read_event(TCPHandler& handler)
     }
 } 
 
-struct Turn {
-    types::turn_t turn;
-    std::vector<Event> events;
+Turn::Turn(TCPHandler& handler)
+{
+    turn = read_element<types::turn_t>(handler);
+    events = read_vector<Event>(handler, read_event);
+}
 
-    Turn(TCPHandler& handler)
-    {
-        turn = read_element<types::turn_t>(handler);
-        events = read_vector<Event>(handler, &read_event);
-    }
-};
-
-struct GameEnded {
-    std::map<types::player_id_t, types::score_t> scores;
-
-    GameEnded(TCPHandler& handler)
-    {
-        scores = read_map<types::player_id_t, types::score_t>(handler, 
-            &read_element<types::player_id_t>, &read_element<types::score_t>);
-    }
-};
-
-struct Lobby {
-    std::string server_name;
-    types::players_count_t players_count;
-    types::size_xy_t size_x;
-    types::size_xy_t size_y;
-    types::game_length_t game_length;
-    types::explosion_radius_t explosion_radius;
-    types::bomb_timer_t bomb_timer;
-    std::map<types::player_id_t, Player> players;
-};
-
-struct Bomb {
-    Position position;
-    types::bomb_timer_t timer;
-};
-
-struct Game {
-    std::string server_name;
-    types::size_xy_t size_x;
-    types::size_xy_t size_y;
-    types::game_length_t game_length;
-    types::turn_t turn;
-    std::map<types::player_id_t, Player> players;
-    std::map<types::player_id_t, Position> player_positions;
-    std::vector<Position> blocks;
-    std::vector<Bomb> bombs;
-    std::vector<Position> explosions;
-    std::map<types::player_id_t, types::score_t> scores;
-};
+GameEnded::GameEnded(TCPHandler& handler)
+{
+    scores = read_map<types::player_id_t, types::score_t>(handler, 
+        &read_element<types::player_id_t>, read_element<types::score_t>);
+}
 
 ClientMessager::ClientMessager(TCPHandler& handler_) : handler(handler_) {}
 
-ClientMessager::read_server_message()
+ServerMessage ClientMessager::read_server_message()
 {
     types::message_id_t message_id = read_element<types::message_id_t>(handler);
 

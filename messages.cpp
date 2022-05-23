@@ -151,7 +151,7 @@ Turn::Turn(TCPHandler& handler)
 GameEnded::GameEnded(TCPHandler& handler)
 {
     scores = read_map<types::player_id_t, types::score_t>(handler, 
-        &read_element<types::player_id_t>, read_element<types::score_t>);
+        read_element<types::player_id_t>, read_element<types::score_t>);
 }
 
 ClientMessager::ClientMessager(TCPHandler& handler_) : handler(handler_) {}

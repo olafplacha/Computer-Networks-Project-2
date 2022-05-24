@@ -86,6 +86,20 @@ static void convert_host_to_network_byte_order(uint8_t* buffer, size_t n)
     }
 }
 
+uint8_t* NetworkHandler::allocate_buffer_space(size_t n)
+{
+    uint8_t* buff_ptr = (uint8_t *) malloc(n);
+    if (buff_ptr == NULL) {
+        throw std::runtime_error("Error occured when allocating space for a buffer!");
+    }
+    return buff_ptr;
+}
+
+NetworkHandler::NetworkHandler(size_t recv_buff_size_) : recv_buff_size(recv_buff_size_)
+{
+    recv_buff = allocate_buffer_space(recv_buff_size_);
+}
+
 int TCPHandler::set_up_tcp_connection(std::string& address, types::port_t port)
 {
     int err;
@@ -102,7 +116,7 @@ int TCPHandler::set_up_tcp_connection(std::string& address, types::port_t port)
         throw std::runtime_error(gai_strerror(err));
     }
 
-    // Create a TCP sockessst.
+    // Create a TCP socket.
     int fd = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
     if (fd == -1) {
         throw std::runtime_error(std::strerror(errno));
@@ -125,26 +139,13 @@ int TCPHandler::set_up_tcp_connection(std::string& address, types::port_t port)
     return fd;
 }
 
-uint8_t* TCPHandler::allocate_buffer_space(size_t n)
-{
-    uint8_t* buff_ptr = (uint8_t *) malloc(n);
-    if (buff_ptr == NULL) {
-        throw std::runtime_error("Error occured when allocating space for a buffer!");
-    }
-    return buff_ptr;
-}
+TCPHandler::TCPHandler(int socket_fd_, size_t recv_buff_size_) : NetworkHandler(recv_buff_size_), 
+    socket_fd(socket_fd_), recv_deque() {}
 
-TCPHandler::TCPHandler(int socket_fd_, size_t recv_buff_size_) : socket_fd(socket_fd_), 
-    recv_buff_size(recv_buff_size_), recv_deque()
-{
-    recv_buff = allocate_buffer_space(recv_buff_size_);
-}
-
-TCPHandler::TCPHandler(std::string& address, types::port_t port, size_t recv_buff_size_) :
-    recv_buff_size(recv_buff_size_)
+TCPHandler::TCPHandler(std::string& address, types::port_t port, size_t recv_buff_size_) : 
+    NetworkHandler(recv_buff_size_), recv_deque()
 {
     socket_fd = set_up_tcp_connection(address, port);
-    recv_buff = allocate_buffer_space(recv_buff_size_);
 }
 
 TCPHandler::~TCPHandler()
@@ -209,4 +210,126 @@ void TCPHandler::send_n_bytes(size_t n, uint8_t* buff)
         n -= bytes_sent;
         buff += bytes_sent;
     }
+}
+
+int UDPHandler::set_up_udp_listening(types::port_t port)
+{
+    int fd = socket(AF_INET6, SOCK_DGRAM, 0);
+    if (fd < 0) {
+        throw std::runtime_error(std::strerror(errno));
+    }
+    
+    struct sockaddr_in6 address;
+    address.sin6_family = AF_INET6;
+    address.sin6_addr = in6addr_any;
+    address.sin6_port = htons(port);
+
+    // Bind port to the socket.
+    if(bind(fd, (struct sockaddr *) &address, sizeof(address)) < 0) {
+        throw std::runtime_error(std::strerror(errno));
+    }
+    return fd;
+}
+
+int UDPHandler::set_up_udp_sending(std::string address, types::port_t port)
+{
+    int err;
+    struct addrinfo hints, *res;
+    
+    memset(&hints, 0, sizeof(struct addrinfo));
+    hints.ai_family = AF_UNSPEC;
+    hints.ai_socktype = SOCK_DGRAM;
+    hints.ai_protocol = IPPROTO_UDP;
+
+    // Resolve the address.
+    err = getaddrinfo(address.c_str(), std::to_string(port).c_str(), &hints, &res);
+    if (err != 0) {
+        throw std::runtime_error(gai_strerror(err));
+    }
+
+    // Create a UDP socket.
+    int fd = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
+    if (fd == -1) {
+        throw std::runtime_error(std::strerror(errno));
+    }
+
+    // Bind the packets receiver.
+    err = connect(fd, res->ai_addr, res->ai_addrlen);
+    if (err != 0) {
+        throw std::runtime_error(std::strerror(errno));
+    }
+
+    freeaddrinfo(res);
+    return fd;
+}
+
+UDPHandler::UDPHandler(types::port_t recv_port, std::string send_address, types::port_t send_port,
+    size_t recv_buff_size_, size_t send_buff_size_) : NetworkHandler(recv_buff_size_), 
+    packet_size(0), send_buff_size(send_buff_size_)
+{
+    recv_socket_fd = set_up_udp_listening(recv_port);
+    send_socket_fd = set_up_udp_sending(send_address, send_port);
+    recv_pointer = recv_buff;
+    send_pointer = allocate_buffer_space(send_buff_size_);
+}
+
+size_t UDPHandler::read_incoming_packet()
+{
+    // Reset the recv_pointer.
+    recv_pointer = recv_buff;
+
+    // Read another UDP packet.
+    ssize_t bytes_read = recv(recv_socket_fd, recv_buff, recv_buff_size, 0);
+    if (bytes_read < 0) {
+        // Some error occured.
+        throw UDPError(std::strerror(errno));
+    }
+
+    packet_size = bytes_read;
+    return packet_size;
+}
+
+template<typename T>
+T UDPHandler::read_next_packet_element()
+{
+    // Check if there is enough data left in the buffer.
+    if (recv_buff + packet_size < recv_pointer + sizeof(T)) {
+        throw UDPError("Attemp to read data out of UDP packet's bound!");
+    }
+
+    // Convert the endianness if needed.
+    convert_network_to_host_byte_order(recv_pointer, sizeof(T));
+    T element = *(T *) recv_pointer;
+
+    // Advance the pointer.
+    recv_pointer += sizeof(T);
+
+    return element;
+}
+
+template<typename T>
+void UDPHandler::append_to_outcoming_packet(T element) {
+    // Check if the element will fit into the send buffer.
+    if (send_buff + send_buff_size < send_pointer + sizeof(T)) {
+        throw UDPError("Data does not fit into the send buffer!");
+    }
+
+    std::memcpy(send_pointer, &element, sizeof(T));
+    convert_host_to_network_byte_order(send_pointer, sizeof(T));
+    
+    // Advance the pointer.
+    send_pointer += sizeof(T);
+}
+
+void UDPHandler::flush_outcoming_packet()
+{   
+    size_t bytes_to_send = send_pointer - send_buff;
+    ssize_t bytes_sent = send(send_socket_fd, send_buff, bytes_to_send, 0);
+    if (bytes_sent < 0) {
+        // Some error occured.
+        throw UDPError(std::strerror(errno));
+    }
+
+    // Free the buffer for next UDP packet.
+    send_pointer = send_buff;
 }

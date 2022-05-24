@@ -21,6 +21,8 @@ struct Move {
     Direction direction;
 };
 
+struct InvalidMessage {};
+
 struct Hello {
     std::string server_name;
     types::players_count_t players_count;
@@ -151,7 +153,7 @@ using ServerMessage = std::variant<Hello, AcceptedPlayer, GameStarted, Turn, Gam
 /* Messages sent from client to GUI. */
 using DrawMessage = std::variant<Lobby, Game>;
 /* Messages sent from GUI to client. */
-using InputMessage = std::variant<PlaceBomb, PlaceBlock, Move>;
+using InputMessage = std::variant<PlaceBomb, PlaceBlock, Move, InvalidMessage>;
 
 class ClientMessager
 {

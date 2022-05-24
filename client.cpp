@@ -13,8 +13,23 @@
 #include "parser.h"
 #include "network_handler.h"
 
+template<typename T>
+void f(T element, uint8_t *buff)
+{
+    uint8_t *p = (uint8_t *) &element;
+    for (size_t i = 0; i < sizeof(T); i++)
+    {
+        buff[i] = p[i];
+    }
+}
+
 int main(int argc, char* argv[]) 
 {
+    uint8_t* b = (uint8_t *) malloc(100);
+    uint16_t a = 12345;
+    f<uint64_t>(a, b);
+
+
     std::cout << sizeof(PlaceBlock) << '\n';
 
     options_client op = parse_client(argc, argv);
@@ -25,20 +40,31 @@ int main(int argc, char* argv[])
     // std::cout << op.server_address << '\n';
     // std::cout << op.server_port << '\n';
 
-    uint8_t buff[100] = {3, 0, 44, 0, 0, 0, 3, 2, 3, 0, 2, 0, 4, 2, 4, 0, 3, 0, 5, 0, 0, 0, 0, 5, 0, 5, 0, 7};
+    UDPHandler udp(op.port, op.gui_address, op.gui_port, UDP_BUFF_SIZE, UDP_BUFF_SIZE);
+    size_t n = udp.read_incoming_packet();
 
-    TCPHandler tcp_handler(op.server_address, op.server_port, TCP_BUFF_SIZE);
-    for (size_t i = 0; i < 64; i++)
+    for (size_t i = 0; i < n; i++)
     {
-        tcp_handler.send_n_bytes(1, buff+i);
+        char c = udp.read_next_packet_element<char>();
+        std::cout << c << '\n';
     }
     
-    ClientMessager client_messager(tcp_handler);
-    ServerMessage mess = client_messager.read_server_message();
 
-    if (std::holds_alternative<Turn>(mess)) {
-        std::cout << "Type ok!\n";
-    }
+
+    // uint8_t buff[100] = {3, 0, 44, 0, 0, 0, 3, 2, 3, 0, 2, 0, 4, 2, 4, 0, 3, 0, 5, 0, 0, 0, 0, 5, 0, 5, 0, 7};
+
+    // TCPHandler tcp_handler(op.server_address, op.server_port, TCP_BUFF_SIZE);
+    // for (size_t i = 0; i < 64; i++)
+    // {
+    //     tcp_handler.send_n_bytes(1, buff+i);
+    // }
+    
+    // ClientMessager client_messager(tcp_handler);
+    // ServerMessage mess = client_messager.read_server_message();
+
+    // if (std::holds_alternative<Turn>(mess)) {
+    //     std::cout << "Type ok!\n";
+    // }
 
     // std::cout << "Read first mess\n";
     // std::cout << "-------------------\n\n";

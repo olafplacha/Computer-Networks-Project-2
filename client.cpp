@@ -13,22 +13,8 @@
 #include "parser.h"
 #include "network_handler.h"
 
-template<typename T>
-void f(T element, uint8_t *buff)
-{
-    uint8_t *p = (uint8_t *) &element;
-    for (size_t i = 0; i < sizeof(T); i++)
-    {
-        buff[i] = p[i];
-    }
-}
-
 int main(int argc, char* argv[]) 
 {
-    uint8_t* b = (uint8_t *) malloc(100);
-    uint16_t a = 12345;
-    f<uint64_t>(a, b);
-
 
     std::cout << sizeof(PlaceBlock) << '\n';
 
@@ -41,15 +27,17 @@ int main(int argc, char* argv[])
     // std::cout << op.server_port << '\n';
 
     UDPHandler udp(op.port, op.gui_address, op.gui_port, UDP_BUFF_SIZE, UDP_BUFF_SIZE);
-    size_t n = udp.read_incoming_packet();
 
-    for (size_t i = 0; i < n; i++)
-    {
-        char c = udp.read_next_packet_element<char>();
-        std::cout << c << '\n';
+    while (true) {
+        size_t n = udp.read_incoming_packet();
+        for (size_t i = 0; i < n; i++)
+        {
+            char c = udp.read_next_packet_element<char>();
+            udp.append_to_outcoming_packet<char>(c);
+        }
+        std::cout << "Flushing...\n";
+        udp.flush_outcoming_packet();
     }
-    
-
 
     // uint8_t buff[100] = {3, 0, 44, 0, 0, 0, 3, 2, 3, 0, 2, 0, 4, 2, 4, 0, 3, 0, 5, 0, 0, 0, 0, 5, 0, 5, 0, 7};
 

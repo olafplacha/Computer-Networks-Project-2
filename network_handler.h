@@ -5,7 +5,11 @@
 #include <string>
 #include <inttypes.h>
 #include <stdexcept>
+#include <cstring>
 #include "config.h"
+
+void convert_network_to_host_byte_order(uint8_t* buffer, size_t n);
+void convert_host_to_network_byte_order(uint8_t* buffer, size_t n);
 
 class TCPError: public std::runtime_error {
     public:
@@ -20,6 +24,8 @@ class UDPError: public std::runtime_error {
 class NetworkHandler {
     public:
         NetworkHandler(size_t recv_buff_size_);
+
+        ~NetworkHandler();
 
     protected:
         uint8_t* recv_buff;
@@ -122,6 +128,8 @@ class UDPHandler : public NetworkHandler {
         UDPHandler(types::port_t recv_port, std::string send_address, types::port_t send_port, 
             size_t recv_buff_size_, size_t send_buff_size_);
 
+        ~UDPHandler();
+
         /**
          * @brief Reads incoming UDP packet and puts it into recv_buff.
          * 
@@ -137,10 +145,36 @@ class UDPHandler : public NetworkHandler {
          * @return T Another element of the UDP packet.
          */
         template<typename T>
-        T read_next_packet_element();
+        T read_next_packet_element()
+        {
+            // Check if there is enough data left in the buffer.
+            if (recv_buff + packet_size < recv_pointer + sizeof(T)) {
+                throw UDPError("Attemp to read data out of UDP packet's bound!");
+            }
+
+            // Convert the endianness if needed.
+            convert_network_to_host_byte_order(recv_pointer, sizeof(T));
+            T element = *(T *) recv_pointer;
+
+            // Advance the pointer.
+            recv_pointer += sizeof(T);
+
+            return element;
+        }
 
         template<typename T>
-        void append_to_outcoming_packet(T element);
+        void append_to_outcoming_packet(T element) {
+            // Check if the element will fit into the send buffer.
+            if (send_buff + send_buff_size < send_pointer + sizeof(T)) {
+                throw UDPError("Data does not fit into the send buffer!");
+            }
+
+            std::memcpy(send_pointer, &element, sizeof(T));
+            convert_host_to_network_byte_order(send_pointer, sizeof(T));
+            
+            // Advance the pointer.
+            send_pointer += sizeof(T);
+        }
 
         void flush_outcoming_packet();
 

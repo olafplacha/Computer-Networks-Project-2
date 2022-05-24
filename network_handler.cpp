@@ -14,7 +14,7 @@
  * @param buffer Pointer to buffer with data.
  * @param n Number of bytes to convert.
  */
-static void convert_network_to_host_byte_order(uint8_t* buffer, size_t n)
+void convert_network_to_host_byte_order(uint8_t* buffer, size_t n)
 {
     switch (n)
     {
@@ -53,7 +53,7 @@ static void convert_network_to_host_byte_order(uint8_t* buffer, size_t n)
  * @param buffer Pointer to buffer with data.
  * @param n Number of bytes to convert.
  */
-static void convert_host_to_network_byte_order(uint8_t* buffer, size_t n)
+void convert_host_to_network_byte_order(uint8_t* buffer, size_t n)
 {
     switch (n)
     {
@@ -84,6 +84,11 @@ static void convert_host_to_network_byte_order(uint8_t* buffer, size_t n)
     default:
         throw std::invalid_argument("Invalid data type size for endianness convertion!");
     }
+}
+
+NetworkHandler::~NetworkHandler()
+{
+    free(recv_buff);
 }
 
 uint8_t* NetworkHandler::allocate_buffer_space(size_t n)
@@ -270,7 +275,8 @@ UDPHandler::UDPHandler(types::port_t recv_port, std::string send_address, types:
     recv_socket_fd = set_up_udp_listening(recv_port);
     send_socket_fd = set_up_udp_sending(send_address, send_port);
     recv_pointer = recv_buff;
-    send_pointer = allocate_buffer_space(send_buff_size_);
+    send_buff = allocate_buffer_space(send_buff_size_);
+    send_pointer = send_buff;
 }
 
 size_t UDPHandler::read_incoming_packet()
@@ -289,38 +295,6 @@ size_t UDPHandler::read_incoming_packet()
     return packet_size;
 }
 
-template<typename T>
-T UDPHandler::read_next_packet_element()
-{
-    // Check if there is enough data left in the buffer.
-    if (recv_buff + packet_size < recv_pointer + sizeof(T)) {
-        throw UDPError("Attemp to read data out of UDP packet's bound!");
-    }
-
-    // Convert the endianness if needed.
-    convert_network_to_host_byte_order(recv_pointer, sizeof(T));
-    T element = *(T *) recv_pointer;
-
-    // Advance the pointer.
-    recv_pointer += sizeof(T);
-
-    return element;
-}
-
-template<typename T>
-void UDPHandler::append_to_outcoming_packet(T element) {
-    // Check if the element will fit into the send buffer.
-    if (send_buff + send_buff_size < send_pointer + sizeof(T)) {
-        throw UDPError("Data does not fit into the send buffer!");
-    }
-
-    std::memcpy(send_pointer, &element, sizeof(T));
-    convert_host_to_network_byte_order(send_pointer, sizeof(T));
-    
-    // Advance the pointer.
-    send_pointer += sizeof(T);
-}
-
 void UDPHandler::flush_outcoming_packet()
 {   
     size_t bytes_to_send = send_pointer - send_buff;
@@ -332,4 +306,17 @@ void UDPHandler::flush_outcoming_packet()
 
     // Free the buffer for next UDP packet.
     send_pointer = send_buff;
+}
+
+UDPHandler::~UDPHandler()
+{
+    free(send_buff);
+    if(close(recv_socket_fd) == -1) {
+        std::cerr << std::strerror(errno) << std::endl;
+        exit(EXIT_FAILURE);
+    }
+    if(close(send_socket_fd) == -1) {
+        std::cerr << std::strerror(errno) << std::endl;
+        exit(EXIT_FAILURE);
+    }
 }

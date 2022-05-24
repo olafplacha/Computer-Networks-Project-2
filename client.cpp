@@ -15,6 +15,7 @@
 
 int main(int argc, char* argv[]) 
 {
+    std::cout << sizeof(PlaceBlock) << '\n';
 
     options_client op = parse_client(argc, argv);
     // std::cout << op.gui_address << '\n';
@@ -26,7 +27,7 @@ int main(int argc, char* argv[])
 
     uint8_t buff[100] = {3, 0, 44, 0, 0, 0, 3, 2, 3, 0, 2, 0, 4, 2, 4, 0, 3, 0, 5, 0, 0, 0, 0, 5, 0, 5, 0, 7};
 
-    TCPHandler tcp_handler(op.server_address, op.server_port, 1000);
+    TCPHandler tcp_handler(op.server_address, op.server_port, TCP_BUFF_SIZE);
     for (size_t i = 0; i < 64; i++)
     {
         tcp_handler.send_n_bytes(1, buff+i);

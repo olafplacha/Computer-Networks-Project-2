@@ -7,7 +7,7 @@
 template<typename T>
 static T read_element(TCPHandler& handler)
 {
-    uint8_t buffer[types::MAX_SIZE];
+    uint8_t buffer[types::MAX_TYPE_SIZE];
 
     handler.read_n_bytes(sizeof(T), buffer);
     T element = *(T *) buffer;

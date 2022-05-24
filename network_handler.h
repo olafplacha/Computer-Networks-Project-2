@@ -12,6 +12,11 @@ class TCPError: public std::runtime_error {
         TCPError(const char* w) : std::runtime_error(w) {}
 };
 
+class UDPError: public std::runtime_error {
+    public:
+        UDPError(const char* w) : std::runtime_error(w) {}
+};
+
 /**
  * @brief Class wrapping reading and writing on a TCP socket. Objects of this class can be
  * instantiated providing previously created socket or by providing name and port of the 

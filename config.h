@@ -4,6 +4,9 @@
 #include <inttypes.h>
 #include <string>
 
+const int TCP_BUFF_SIZE = 65536;
+const int UDP_BUFF_SIZE = 65536;
+
 namespace types
 {
     using port_t = uint16_t;
@@ -26,7 +29,7 @@ namespace types
     using map_len_t = uint32_t;
     using vec_len_t = uint32_t;
 
-    const int MAX_SIZE = 8;
+    const int MAX_TYPE_SIZE = 8;
 }
 
 namespace usage

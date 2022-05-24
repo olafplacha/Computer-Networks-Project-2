@@ -7,7 +7,7 @@
 #include <map>
 #include "network_handler.h"
 
-enum Direction { Up, Right, Left, Down };
+enum class Direction : std::underlying_type_t<std::byte> { Up, Right, Left, Down };
 
 struct Join {
     std::string name;
@@ -19,6 +19,9 @@ struct PlaceBlock {};
 
 struct Move {
     Direction direction;
+
+    Move() = default;
+    Move(Direction& direction_);
 };
 
 struct InvalidMessage {};
@@ -158,7 +161,7 @@ using InputMessage = std::variant<PlaceBomb, PlaceBlock, Move, InvalidMessage>;
 class ClientMessager
 {
     public:
-        ClientMessager(TCPHandler&);
+        ClientMessager(TCPHandler&, UDPHandler&);
 
         /**
          * @brief Reads another message from the server.
@@ -166,13 +169,15 @@ class ClientMessager
          * @return ServerMessage Message from the server.
          */
         ServerMessage read_server_message();
+        InputMessage read_gui_message();
 
         /* Delete copy constructor and copy assignment. */
         ClientMessager(ClientMessager const&) = delete;
         void operator=(ClientMessager const&) = delete;
 
     private:
-        TCPHandler& handler;
+        TCPHandler& tcp_handler;
+        UDPHandler& udp_handler;
 };
 
 #endif // MESSAGES_H

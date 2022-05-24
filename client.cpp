@@ -16,9 +16,10 @@
 int main(int argc, char* argv[]) 
 {
 
-    std::cout << sizeof(PlaceBlock) << '\n';
+    // std::cout << sizeof(Move) << '\n';
+    // std::cout << (unsigned) Direction::Right << '\n';
 
-    options_client op = parse_client(argc, argv);
+    // options_client op = parse_client(argc, argv);
     // std::cout << op.gui_address << '\n';
     // std::cout << op.gui_port << '\n';
     // std::cout << op.player_name << '\n';
@@ -26,18 +27,19 @@ int main(int argc, char* argv[])
     // std::cout << op.server_address << '\n';
     // std::cout << op.server_port << '\n';
 
+    TCPHandler tcp_handler(op.server_address, op.server_port, TCP_BUFF_SIZE);
     UDPHandler udp(op.port, op.gui_address, op.gui_port, UDP_BUFF_SIZE, UDP_BUFF_SIZE);
 
-    while (true) {
-        size_t n = udp.read_incoming_packet();
-        for (size_t i = 0; i < n; i++)
-        {
-            char c = udp.read_next_packet_element<char>();
-            udp.append_to_outcoming_packet<char>(c);
-        }
-        std::cout << "Flushing...\n";
-        udp.flush_outcoming_packet();
-    }
+    // while (true) {
+    //     size_t n = udp.read_incoming_packet();
+    //     for (size_t i = 0; i < n; i++)
+    //     {
+    //         char c = udp.read_next_packet_element<char>();
+    //         udp.append_to_outcoming_packet<char>(c);
+    //     }
+    //     std::cout << "Flushing...\n";
+    //     udp.flush_outcoming_packet();
+    // }
 
     // uint8_t buff[100] = {3, 0, 44, 0, 0, 0, 3, 2, 3, 0, 2, 0, 4, 2, 4, 0, 3, 0, 5, 0, 0, 0, 0, 5, 0, 5, 0, 7};
 

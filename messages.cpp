@@ -61,6 +61,8 @@ static std::string read_string(TCPHandler& handler)
     return s;
 }
 
+Move::Move(Direction& direction_) : direction(direction_) {}
+
 Hello::Hello(TCPHandler& handler)
 {
     server_name = read_string(handler);
@@ -154,25 +156,58 @@ GameEnded::GameEnded(TCPHandler& handler)
         read_element<types::player_id_t>, read_element<types::score_t>);
 }
 
-ClientMessager::ClientMessager(TCPHandler& handler_) : handler(handler_) {}
+ClientMessager::ClientMessager(TCPHandler& tcp_handler_, UDPHandler& udp_handler_) : 
+    tcp_handler(tcp_handler_), udp_handler(udp_handler_) {}
 
 ServerMessage ClientMessager::read_server_message()
 {
-    types::message_id_t message_id = read_element<types::message_id_t>(handler);
+    types::message_id_t message_id = read_element<types::message_id_t>(tcp_handler);
 
     switch (message_id)
     {
     case 0:
-        return Hello(handler);
+        return Hello(tcp_handler);
     case 1:
-        return AcceptedPlayer(handler);
+        return AcceptedPlayer(tcp_handler);
     case 2:
-        return GameStarted(handler);
+        return GameStarted(tcp_handler);
     case 3:
-        return Turn(handler);
+        return Turn(tcp_handler);
     case 4:
-        return GameEnded(handler);
+        return GameEnded(tcp_handler);
     default:
         throw std::runtime_error("Unknown message received from the server!");
     }
+}
+
+InputMessage ClientMessager::read_gui_message()
+{
+    // Read another incoming UDP packet.
+    size_t packet_size = udp_handler.read_incoming_packet();
+    if (packet_size == 0) {
+        // Treat empty UDP packet as an invalid message. 
+        return InvalidMessage();
+    }
+
+    types::message_id_t message_id = udp_handler.read_next_packet_element<types::message_id_t>();
+
+    switch (message_id)
+    {
+        case 0:
+            if (packet_size == 1) return PlaceBomb();
+            break;
+        case 1:
+            if (packet_size == 1) return PlaceBlock();
+            break;
+        case 2:
+            if (packet_size == 1 + sizeof(Move)) {
+                uint8_t d_val = udp_handler.read_next_packet_element<u_int8_t>();
+                if (d_val < 4) {
+                    Direction direction = static_cast<Direction>(d_val);
+                    return Move(direction);
+                }
+            }   
+            break;         
+    }
+    return InvalidMessage();
 }

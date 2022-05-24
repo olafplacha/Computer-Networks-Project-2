@@ -50,6 +50,7 @@ struct Player {
 
     Player() = default;
     Player(TCPHandler& handler);
+    void serialize(UDPHandler& handler);
 };
 
 struct AcceptedPlayer {
@@ -133,6 +134,8 @@ struct Lobby {
     types::explosion_radius_t explosion_radius;
     types::bomb_timer_t bomb_timer;
     std::map<types::player_id_t, Player> players;
+
+    void serialize(UDPHandler&);
 };
 
 struct Bomb {
@@ -152,6 +155,8 @@ struct Game {
     std::vector<Bomb> bombs;
     std::vector<Position> explosions;
     std::map<types::player_id_t, types::score_t> scores;
+
+    void serialize(UDPHandler&);
 };
 
 namespace serverClientCodes {
@@ -159,6 +164,11 @@ namespace serverClientCodes {
     const types::message_id_t placeBomb = 1;
     const types::message_id_t placeBlock = 2;
     const types::message_id_t move = 3;
+}
+
+namespace guiClientCodes {
+    const types::message_id_t lobby = 0;
+    const types::message_id_t game = 1;
 }
 
 /* Messages sent from client to server. */
@@ -170,10 +180,10 @@ using DrawMessage = std::variant<Lobby, Game>;
 /* Messages sent from GUI to client. */
 using InputMessage = std::variant<PlaceBomb, PlaceBlock, Move, InvalidMessage>;
 
-class ClientMessager
+class ClientMessageManager
 {
     public:
-        ClientMessager(TCPHandler&, UDPHandler&);
+        ClientMessageManager(TCPHandler&, UDPHandler&);
 
         /**
          * @brief Reads another message from the server.
@@ -188,11 +198,12 @@ class ClientMessager
         void send_server_message(PlaceBlock&);
         void send_server_message(Move&);
 
-        // void send_gui_message(DrawMessage&);
+        void send_gui_message(Lobby&);
+        void send_gui_message(Game&);
 
         /* Delete copy constructor and copy assignment. */
-        ClientMessager(ClientMessager const&) = delete;
-        void operator=(ClientMessager const&) = delete;
+        ClientMessageManager(ClientMessageManager const&) = delete;
+        void operator=(ClientMessageManager const&) = delete;
 
     private:
         TCPHandler& tcp_handler;

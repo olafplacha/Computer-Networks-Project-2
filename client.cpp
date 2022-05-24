@@ -29,7 +29,7 @@ int main(int argc, char* argv[])
 
     TCPHandler tcp_handler(op.server_address, op.server_port, TCP_BUFF_SIZE);
     UDPHandler udp_handler(op.port, op.gui_address, op.gui_port, UDP_BUFF_SIZE);
-    ClientMessager messager(tcp_handler, udp_handler);
+    ClientMessageManager manager(tcp_handler, udp_handler);
 
     // while (true)
     // {
@@ -51,17 +51,18 @@ int main(int argc, char* argv[])
     //     }
     // }
 
+
     Join message0(op.player_name);
-    messager.send_server_message(message0);
+    manager.send_server_message(message0);
 
     PlaceBomb message1;
-    messager.send_server_message(message1);
+    manager.send_server_message(message1);
 
     PlaceBlock message2;
-    messager.send_server_message(message2);
+    manager.send_server_message(message2);
 
     Move message3(Direction::Down);
-    messager.send_server_message(message3);
+    manager.send_server_message(message3);
 
     // while (true) {
     //     size_t n = udp.read_incoming_packet();

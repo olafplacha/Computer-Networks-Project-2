@@ -30,6 +30,7 @@ namespace types
     using vec_len_t = uint32_t;
 
     const int MAX_TYPE_SIZE = 8;
+    const int MAX_STR_SIZE = 255;
 }
 
 namespace usage

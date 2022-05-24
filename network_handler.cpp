@@ -158,7 +158,6 @@ TCPHandler::TCPHandler(std::string& address, types::port_t port, size_t buff_siz
 
 TCPHandler::~TCPHandler()
 {
-    free(recv_buff);
     if (shutdown(socket_fd, SHUT_WR) == -1) {
         std::cerr << std::strerror(errno) << std::endl;
         exit(EXIT_FAILURE);
@@ -205,9 +204,6 @@ void TCPHandler::read_n_bytes(size_t n, uint8_t* buff)
 
 void TCPHandler::send_n_bytes(size_t n, uint8_t* buff)
 {
-    // Convert the endianness if needed.
-    convert_host_to_network_byte_order(buff, n);
-
     // Send until there are no bytes to be sent.
     while (n > 0) {
         ssize_t bytes_sent = send(socket_fd, buff, n, 0);
@@ -311,7 +307,6 @@ void UDPHandler::flush_outcoming_packet()
 
 UDPHandler::~UDPHandler()
 {
-    free(send_buff);
     if(close(recv_socket_fd) == -1) {
         std::cerr << std::strerror(errno) << std::endl;
         exit(EXIT_FAILURE);

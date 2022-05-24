@@ -7,23 +7,34 @@
 #include <map>
 #include "network_handler.h"
 
-enum class Direction : std::underlying_type_t<std::byte> { Up, Right, Left, Down };
-
-struct Join {
-    std::string name;
-
-    void serialize(TCPHandler&);
+class TCPSerializable
+{
+    public:
+        virtual void serialize(TCPHandler&) = 0;
 };
 
-struct PlaceBomb {};
+enum class Direction : std::underlying_type_t<std::byte> { Up, Right, Left, Down };
+
+struct Join : TCPSerializable {
+    std::string name;
+
+    Join() = default;
+    Join(std::string&);
+    void serialize(TCPHandler&) override;
+};
+
+struct PlaceBomb  {
+    // void serialize(TCPHandler&) override;
+};
 
 struct PlaceBlock {};
 
-struct Move {
+struct Move : TCPSerializable {
     Direction direction;
 
     Move() = default;
     Move(Direction& direction_);
+    void serialize(TCPHandler&) override;
 };
 
 struct InvalidMessage {};
@@ -151,6 +162,13 @@ struct Game {
     std::map<types::player_id_t, types::score_t> scores;
 };
 
+namespace serverClientCodes {
+    const types::message_id_t join = 0;
+    const types::message_id_t placeBomb = 0;
+    const types::message_id_t placeBlock = 0;
+    const types::message_id_t move = 0;
+}
+
 /* Messages sent from client to server. */
 using ClientMessage = std::variant<Join, PlaceBomb, PlaceBlock, Move>;
 /* Messages sent from server to client. */
@@ -173,7 +191,11 @@ class ClientMessager
         ServerMessage read_server_message();
         InputMessage read_gui_message();
 
-        void send_server_message(ClientMessage&);
+        void send_server_message(Join&);
+        void send_server_message(PlaceBomb&);
+        void send_server_message(PlaceBlock&);
+        void send_server_message(Move&);
+
         void send_gui_message(DrawMessage&);
 
         /* Delete copy constructor and copy assignment. */

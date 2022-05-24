@@ -81,8 +81,18 @@ class TCPHandler : public NetworkHandler {
          */ 
         void read_n_bytes(size_t n, uint8_t* buff); // TODO - template this function!
         
-        // template<typename T>
-        // void send_element(T element);
+        // Send element over TCP connection.
+        template<typename T>
+        void send_element(T element)
+        {
+            // Put the bytes into the send buffer.
+            std::memcpy(send_buff, &element, sizeof(T));
+
+            // Convert the endianness if needed.
+            convert_host_to_network_byte_order(send_buff, sizeof(T));
+
+            send_n_bytes(sizeof(T), send_buff);
+        }
 
         // Delete copy constructor and copy assignment.
         TCPHandler(TCPHandler const&) = delete;
@@ -108,6 +118,8 @@ class TCPHandler : public NetworkHandler {
          * @throws TCPError.
          */
         void return_when_n_bytes_in_deque(size_t n);
+
+        void send_n_bytes(size_t n, uint8_t* buff);
 };
 
 class UDPHandler : public NetworkHandler {

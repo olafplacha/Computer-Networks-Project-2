@@ -61,14 +61,39 @@ static std::string read_string(TCPHandler& handler)
     return s;
 }
 
+void serialize_string(std::string& s, std::function<void (uint8_t)> send_int, 
+    std::function<void (char)> send_char)
+{
+    uint8_t n = types::MAX_STR_SIZE;
+    if (s.size() < types::MAX_STR_SIZE) {
+        n = (uint8_t) s.size();
+    }
 
+    // Send data using provided function.
+    send_int(n);
+    for (size_t i = 0; i < n; i++)
+    {
+        send_char(s.at(i));
+    }
+}
+
+Join::Join(std::string& name_)
+{
+    name = name_;
+}
 
 void Join::serialize(TCPHandler& handler)
 {
-
+    serialize_string(name, [&](uint8_t t){ return handler.send_element<uint8_t>(t); },
+        [&](char t){ handler.send_element<char>(t); });
 }
 
 Move::Move(Direction& direction_) : direction(direction_) {}
+
+void Move::serialize(TCPHandler& handler)
+{
+    handler.send_element<uint8_t>(static_cast<uint8_t>(direction));
+}
 
 Hello::Hello(TCPHandler& handler)
 {
@@ -219,13 +244,30 @@ InputMessage ClientMessager::read_gui_message()
 }
 
 // Over TCP.
-void ClientMessager::send_server_message(ClientMessage& message)
+void ClientMessager::send_server_message(Join& message)
 {
-    if (std::holds_alternative<Join>(message)) {
-        Join join = std::get<Join>(message);
-        
-    }
+    tcp_handler.send_element<types::message_id_t>(serverClientCodes::join);
+    message.serialize(tcp_handler);
 }
+
+void ClientMessager::send_server_message(PlaceBomb& message)
+{
+    tcp_handler.send_element<types::message_id_t>(serverClientCodes::placeBomb);
+    message.
+}
+
+void ClientMessager::send_server_message(PlaceBlock& message)
+{
+    tcp_handler.send_element<types::message_id_t>(serverClientCodes::placeBlock);
+}
+
+void ClientMessager::send_server_message(Move& message)
+{
+    tcp_handler.send_element<types::message_id_t>(serverClientCodes::move);
+    message.serialize(tcp_handler);
+}
+
+
 
 // Over UDP.
 void ClientMessager::send_gui_message(DrawMessage& message)

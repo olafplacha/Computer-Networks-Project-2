@@ -51,18 +51,38 @@ int main(int argc, char* argv[])
     //     }
     // }
 
+    Lobby l;
+    l.server_name = op.player_name;
+    l.players_count = 2;
+    l.size_x = 99;
+    l.size_y = 1909;
+    l.game_length = 1111;
+    l.explosion_radius = 90;
+    l.bomb_timer = 978;
+    Player p0;
+    p0.address = "123:456";
+    p0.name = "damian";
+    Player p1;
+    p1.address = "localhost";
+    p1.name = "olaf";
+    std::map<types::player_id_t, Player> m;
+    m.insert({9, p0});
+    m.insert({92, p1});
+    l.players = m;
 
-    Join message0(op.player_name);
-    manager.send_server_message(message0);
+    manager.send_gui_message(l);
 
-    PlaceBomb message1;
-    manager.send_server_message(message1);
+    // Join message0(op.player_name);
+    // manager.send_server_message(message0);
 
-    PlaceBlock message2;
-    manager.send_server_message(message2);
+    // PlaceBomb message1;
+    // manager.send_server_message(message1);
 
-    Move message3(Direction::Down);
-    manager.send_server_message(message3);
+    // PlaceBlock message2;
+    // manager.send_server_message(message2);
+
+    // Move message3(Direction::Down);
+    // manager.send_server_message(message3);
 
     // while (true) {
     //     size_t n = udp.read_incoming_packet();

@@ -227,7 +227,7 @@ void Lobby::serialize(UDPHandler& handler)
     handler.append_to_outcoming_packet<types::bomb_timer_t>(bomb_timer);
 
     // Serialize map with players.
-    auto send_int32 = [&](uint8_t t){ handler.append_to_outcoming_packet<uint8_t>(t); };
+    auto send_int32 = [&](uint32_t t){ handler.append_to_outcoming_packet<uint32_t>(t); };
     auto send_key = [&](types::player_id_t t) { 
         handler.append_to_outcoming_packet<types::player_id_t>(t); };
     auto send_val = [&](Player t){ t.serialize(handler); };
@@ -314,7 +314,7 @@ void ClientMessageManager::send_server_message(Move& message)
 // Over UDP.
 void ClientMessageManager::send_gui_message(Lobby& message)
 {
-    tcp_handler.send_element<types::message_id_t>(guiClientCodes::lobby);
+    udp_handler.append_to_outcoming_packet<types::message_id_t>(guiClientCodes::lobby);
     message.serialize(udp_handler);
 
     // Send the packet.

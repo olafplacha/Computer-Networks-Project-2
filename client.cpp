@@ -19,7 +19,7 @@ int main(int argc, char* argv[])
     // std::cout << sizeof(Move) << '\n';
     // std::cout << (unsigned) Direction::Right << '\n';
 
-    // options_client op = parse_client(argc, argv);
+    options_client op = parse_client(argc, argv);
     // std::cout << op.gui_address << '\n';
     // std::cout << op.gui_port << '\n';
     // std::cout << op.player_name << '\n';
@@ -28,7 +28,29 @@ int main(int argc, char* argv[])
     // std::cout << op.server_port << '\n';
 
     TCPHandler tcp_handler(op.server_address, op.server_port, TCP_BUFF_SIZE);
-    UDPHandler udp(op.port, op.gui_address, op.gui_port, UDP_BUFF_SIZE, UDP_BUFF_SIZE);
+    UDPHandler udp_handler(op.port, op.gui_address, op.gui_port, UDP_BUFF_SIZE);
+    ClientMessager messager(tcp_handler, udp_handler);
+
+    while (true)
+    {
+        InputMessage m = messager.read_gui_message();
+        if (std::holds_alternative<PlaceBomb>(m)) {
+            std::cout << "PlaceBomb\n";
+        }
+        else if (std::holds_alternative<PlaceBlock>(m)) {
+            std::cout << "PlaceBlock\n";
+        }
+        else if (std::holds_alternative<Move>(m)) {
+            std::cout << "Move " << static_cast<int>(std::get<Move>(m).direction) << '\n';
+        }
+        else if (std::holds_alternative<InvalidMessage>(m)) {
+            std::cout << "InvalidMessage\n";
+        }
+        else {
+            exit(EXIT_FAILURE);
+        }
+    }
+    
 
     // while (true) {
     //     size_t n = udp.read_incoming_packet();

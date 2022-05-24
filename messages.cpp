@@ -61,6 +61,13 @@ static std::string read_string(TCPHandler& handler)
     return s;
 }
 
+
+
+void Join::serialize(TCPHandler& handler)
+{
+
+}
+
 Move::Move(Direction& direction_) : direction(direction_) {}
 
 Hello::Hello(TCPHandler& handler)
@@ -207,7 +214,22 @@ InputMessage ClientMessager::read_gui_message()
                     return Move(direction);
                 }
             }   
-            break;         
     }
     return InvalidMessage();
+}
+
+// Over TCP.
+void ClientMessager::send_server_message(ClientMessage& message)
+{
+    if (std::holds_alternative<Join>(message)) {
+        Join join = std::get<Join>(message);
+        
+    }
+}
+
+// Over UDP.
+void ClientMessager::send_gui_message(DrawMessage& message)
+{
+
+    // Flush the packet.
 }

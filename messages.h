@@ -11,6 +11,8 @@ enum class Direction : std::underlying_type_t<std::byte> { Up, Right, Left, Down
 
 struct Join {
     std::string name;
+
+    void serialize(TCPHandler&);
 };
 
 struct PlaceBomb {};
@@ -170,6 +172,9 @@ class ClientMessager
          */
         ServerMessage read_server_message();
         InputMessage read_gui_message();
+
+        void send_server_message(ClientMessage&);
+        void send_gui_message(DrawMessage&);
 
         /* Delete copy constructor and copy assignment. */
         ClientMessager(ClientMessager const&) = delete;

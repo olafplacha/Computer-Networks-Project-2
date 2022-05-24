@@ -23,13 +23,15 @@ class UDPError: public std::runtime_error {
 
 class NetworkHandler {
     public:
-        NetworkHandler(size_t recv_buff_size_);
+        NetworkHandler(size_t recv_buff_size_, size_t send_buff_size_);
 
         ~NetworkHandler();
 
     protected:
         uint8_t* recv_buff;
         size_t recv_buff_size;
+        uint8_t* send_buff;
+        size_t send_buff_size;
 
         /**
          * @brief Allocates space for a buffer.
@@ -52,18 +54,18 @@ class TCPHandler : public NetworkHandler {
          * @brief Construct a new TCPHandler object using previously created socket.
          * 
          * @param socket_fd_ Connected TCP socket file descriptor.
-         * @param recv_buff_size_ Size of the receive buffer.
+         * @param buff_size_ Size of the receive/send buffers.
          */
-        TCPHandler(int socket_fd_, size_t recv_buff_size_);
+        TCPHandler(int socket_fd_, size_t buff_size_);
 
         /**
          * @brief Construct a new TCPHandler object using provided address and port of the server.
          * 
          * @param address Address of the server.
          * @param port Port of the server.
-         * @param recv_buff_size_ Size of the receive buffer.
+         * @param buff_size_ Size of the receive/send buffers.
          */
-        TCPHandler(std::string& address, types::port_t port, size_t recv_buff_size_);
+        TCPHandler(std::string& address, types::port_t port, size_t buff_size_);
 
         ~TCPHandler();
 
@@ -77,17 +79,10 @@ class TCPHandler : public NetworkHandler {
          * @param buff Pointer to buffer of size at least n in which read bytes are returned.
          * @throws TCPError.
          */ 
-        void read_n_bytes(size_t n, uint8_t* buff);
+        void read_n_bytes(size_t n, uint8_t* buff); // TODO - template this function!
         
-        /**
-         * @brief Convert endianness if needed and send n bytes from the buffer. Because of 
-         * endianness convertion, the method supports only 1, 2, 4 and 8 as the value of n.
-         * 
-         * @param n Number of bytes to send.
-         * @param buff Pointer to data to be sent.
-         * @throws TCPError.
-         */
-        void send_n_bytes(size_t n, uint8_t* buff);
+        // template<typename T>
+        // void send_element(T element);
 
         // Delete copy constructor and copy assignment.
         TCPHandler(TCPHandler const&) = delete;
@@ -123,10 +118,10 @@ class UDPHandler : public NetworkHandler {
          * @param recv_port Port on which the handler listens to incoming UDP packets.
          * @param send_address Address of host to which UDP packets are sent.
          * @param send_port Port of host to which UDP packets are sent.
-         * @param recv_buff_size_ Size of the receive buffer.
+         * @param buff_size_ Size of the receive/send buffers.
          */
         UDPHandler(types::port_t recv_port, std::string send_address, types::port_t send_port, 
-            size_t recv_buff_size_, size_t send_buff_size_);
+            size_t buff_size_);
 
         ~UDPHandler();
 
@@ -189,10 +184,8 @@ class UDPHandler : public NetworkHandler {
         size_t packet_size;
         // Keeps track of the next element of the packet to be read.
         uint8_t* recv_pointer;
-        uint8_t* send_buff;
         // Keeps track of free space in the send buffer.
         uint8_t* send_pointer;
-        size_t send_buff_size;
 
         /**
          * @brief Open a socket for reading UDP packets.

@@ -86,11 +86,6 @@ void convert_host_to_network_byte_order(uint8_t* buffer, size_t n)
     }
 }
 
-NetworkHandler::~NetworkHandler()
-{
-    free(recv_buff);
-}
-
 uint8_t* NetworkHandler::allocate_buffer_space(size_t n)
 {
     uint8_t* buff_ptr = (uint8_t *) malloc(n);
@@ -100,9 +95,17 @@ uint8_t* NetworkHandler::allocate_buffer_space(size_t n)
     return buff_ptr;
 }
 
-NetworkHandler::NetworkHandler(size_t recv_buff_size_) : recv_buff_size(recv_buff_size_)
+NetworkHandler::NetworkHandler(size_t recv_buff_size_, size_t send_buff_size_) : 
+    recv_buff_size(recv_buff_size_), send_buff_size(send_buff_size_)
 {
     recv_buff = allocate_buffer_space(recv_buff_size_);
+    send_buff = allocate_buffer_space(send_buff_size_);
+}
+
+NetworkHandler::~NetworkHandler()
+{
+    free(recv_buff);
+    free(send_buff);
 }
 
 int TCPHandler::set_up_tcp_connection(std::string& address, types::port_t port)
@@ -144,11 +147,11 @@ int TCPHandler::set_up_tcp_connection(std::string& address, types::port_t port)
     return fd;
 }
 
-TCPHandler::TCPHandler(int socket_fd_, size_t recv_buff_size_) : NetworkHandler(recv_buff_size_), 
-    socket_fd(socket_fd_), recv_deque() {}
+TCPHandler::TCPHandler(int socket_fd_, size_t buff_size_) : 
+    NetworkHandler(buff_size_, buff_size_), socket_fd(socket_fd_), recv_deque() {}
 
-TCPHandler::TCPHandler(std::string& address, types::port_t port, size_t recv_buff_size_) : 
-    NetworkHandler(recv_buff_size_), recv_deque()
+TCPHandler::TCPHandler(std::string& address, types::port_t port, size_t buff_size_) : 
+    NetworkHandler(buff_size_, buff_size_), recv_deque()
 {
     socket_fd = set_up_tcp_connection(address, port);
 }
@@ -269,13 +272,11 @@ int UDPHandler::set_up_udp_sending(std::string address, types::port_t port)
 }
 
 UDPHandler::UDPHandler(types::port_t recv_port, std::string send_address, types::port_t send_port,
-    size_t recv_buff_size_, size_t send_buff_size_) : NetworkHandler(recv_buff_size_), 
-    packet_size(0), send_buff_size(send_buff_size_)
+    size_t buff_size_) : NetworkHandler(buff_size_, buff_size_), packet_size(0)
 {
     recv_socket_fd = set_up_udp_listening(recv_port);
     send_socket_fd = set_up_udp_sending(send_address, send_port);
     recv_pointer = recv_buff;
-    send_buff = allocate_buffer_space(send_buff_size_);
     send_pointer = send_buff;
 }
 

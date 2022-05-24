@@ -88,7 +88,7 @@ void Join::serialize(TCPHandler& handler)
         [&](char t){ handler.send_element<char>(t); });
 }
 
-Move::Move(Direction& direction_) : direction(direction_) {}
+Move::Move(Direction direction_) : direction(direction_) {}
 
 void Move::serialize(TCPHandler& handler)
 {
@@ -243,20 +243,18 @@ InputMessage ClientMessager::read_gui_message()
     return InvalidMessage();
 }
 
-// Over TCP.
 void ClientMessager::send_server_message(Join& message)
 {
     tcp_handler.send_element<types::message_id_t>(serverClientCodes::join);
     message.serialize(tcp_handler);
 }
 
-void ClientMessager::send_server_message(PlaceBomb& message)
+void ClientMessager::send_server_message([[maybe_unused]] PlaceBomb& message)
 {
     tcp_handler.send_element<types::message_id_t>(serverClientCodes::placeBomb);
-    message.
 }
 
-void ClientMessager::send_server_message(PlaceBlock& message)
+void ClientMessager::send_server_message([[maybe_unused]] PlaceBlock& message)
 {
     tcp_handler.send_element<types::message_id_t>(serverClientCodes::placeBlock);
 }
@@ -267,11 +265,9 @@ void ClientMessager::send_server_message(Move& message)
     message.serialize(tcp_handler);
 }
 
+// // Over UDP.
+// void ClientMessager::send_gui_message(DrawMessage& message)
+// {
 
-
-// Over UDP.
-void ClientMessager::send_gui_message(DrawMessage& message)
-{
-
-    // Flush the packet.
-}
+//     // Flush the packet.
+// }

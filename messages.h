@@ -7,34 +7,26 @@
 #include <map>
 #include "network_handler.h"
 
-class TCPSerializable
-{
-    public:
-        virtual void serialize(TCPHandler&) = 0;
-};
+enum class Direction : std::underlying_type_t<std::byte> { Up, Right, Down, Left };
 
-enum class Direction : std::underlying_type_t<std::byte> { Up, Right, Left, Down };
-
-struct Join : TCPSerializable {
+struct Join {
     std::string name;
 
     Join() = default;
     Join(std::string&);
-    void serialize(TCPHandler&) override;
+    void serialize(TCPHandler&);
 };
 
-struct PlaceBomb  {
-    // void serialize(TCPHandler&) override;
-};
+struct PlaceBomb  {};
 
 struct PlaceBlock {};
 
-struct Move : TCPSerializable {
+struct Move {
     Direction direction;
 
     Move() = default;
-    Move(Direction& direction_);
-    void serialize(TCPHandler&) override;
+    Move(Direction direction_);
+    void serialize(TCPHandler&);
 };
 
 struct InvalidMessage {};
@@ -164,9 +156,9 @@ struct Game {
 
 namespace serverClientCodes {
     const types::message_id_t join = 0;
-    const types::message_id_t placeBomb = 0;
-    const types::message_id_t placeBlock = 0;
-    const types::message_id_t move = 0;
+    const types::message_id_t placeBomb = 1;
+    const types::message_id_t placeBlock = 2;
+    const types::message_id_t move = 3;
 }
 
 /* Messages sent from client to server. */
@@ -196,7 +188,7 @@ class ClientMessager
         void send_server_message(PlaceBlock&);
         void send_server_message(Move&);
 
-        void send_gui_message(DrawMessage&);
+        // void send_gui_message(DrawMessage&);
 
         /* Delete copy constructor and copy assignment. */
         ClientMessager(ClientMessager const&) = delete;

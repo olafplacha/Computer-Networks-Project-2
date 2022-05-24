@@ -51,8 +51,17 @@ int main(int argc, char* argv[])
     //     }
     // }
 
-    Join message(op.player_name);
-    messager.send_server_message(message);
+    Join message0(op.player_name);
+    messager.send_server_message(message0);
+
+    PlaceBomb message1;
+    messager.send_server_message(message1);
+
+    PlaceBlock message2;
+    messager.send_server_message(message2);
+
+    Move message3(Direction::Down);
+    messager.send_server_message(message3);
 
     // while (true) {
     //     size_t n = udp.read_incoming_packet();

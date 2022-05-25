@@ -31,6 +31,8 @@ int main(int argc, char* argv[])
     UDPHandler udp_handler(op.port, op.gui_address, op.gui_port, UDP_BUFF_SIZE);
     ClientMessageManager manager(tcp_handler, udp_handler);
 
+    
+
     // while (true)
     // {
     //     InputMessage m = messager.read_gui_message();

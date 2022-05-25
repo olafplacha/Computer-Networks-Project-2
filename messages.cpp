@@ -92,6 +92,19 @@ void serialize_map(std::map<K, V>& m, std::function<void (uint32_t)> send_int,
     }
 }
 
+template<typename T>
+void serialize_vector(std::vector<T>& v, std::function<void (uint32_t)> send_int,
+    std::function<void (T)> send_element)
+{
+    // Vectors of bigger size are not supported.
+    uint32_t n = (uint32_t) v.size();
+
+    send_int(n);
+    for (auto const& element : v) {
+        send_element(element);
+    }
+}
+
 Join::Join(std::string& name_)
 {
     name = name_;
@@ -153,6 +166,12 @@ Position::Position(TCPHandler& handler)
     y = read_element<types::size_xy_t>(handler);
 }
 
+void Position::serialize(UDPHandler& handler)
+{
+    handler.append_to_outcoming_packet<types::size_xy_t>(x);
+    handler.append_to_outcoming_packet<types::size_xy_t>(y);
+}
+
 BombPlaced::BombPlaced(TCPHandler& handler)
 {
     id = read_element<types::bomb_id_t>(handler);
@@ -211,6 +230,12 @@ GameEnded::GameEnded(TCPHandler& handler)
         read_element<types::player_id_t>, read_element<types::score_t>);
 }
 
+void Bomb::serialize(UDPHandler& handler)
+{
+    position.serialize(handler);
+    handler.append_to_outcoming_packet<types::bomb_timer_t>(timer);
+}
+
 void Lobby::serialize(UDPHandler& handler)
 {
     // Serialize server name.
@@ -232,6 +257,46 @@ void Lobby::serialize(UDPHandler& handler)
         handler.append_to_outcoming_packet<types::player_id_t>(t); };
     auto send_val = [&](Player t){ t.serialize(handler); };
     serialize_map<types::player_id_t, Player>(players, send_int32, send_key, send_val);
+}
+
+void Game::serialize(UDPHandler& handler)
+{
+    // Serialize server name.
+    auto send_int8 = [&](uint8_t t){ handler.append_to_outcoming_packet<uint8_t>(t); };
+    auto send_char = [&](char t){ handler.append_to_outcoming_packet<char>(t); };
+    serialize_string(server_name, send_int8, send_char);
+
+    // Serialize other fields.
+    handler.append_to_outcoming_packet<types::size_xy_t>(size_x);
+    handler.append_to_outcoming_packet<types::size_xy_t>(size_y);
+    handler.append_to_outcoming_packet<types::game_length_t>(game_length);
+    handler.append_to_outcoming_packet<types::turn_t>(turn);
+
+    // Serialize map with players.
+    auto send_int32 = [&](uint32_t t){ handler.append_to_outcoming_packet<uint32_t>(t); };
+    auto send_key = [&](types::player_id_t t) { 
+        handler.append_to_outcoming_packet<types::player_id_t>(t); };
+    auto send_player = [&](Player t){ t.serialize(handler); };
+    serialize_map<types::player_id_t, Player>(players, send_int32, send_key, send_player);
+
+    // Serialize map with players positions.
+    auto send_position = [&](Position t){ t.serialize(handler); };
+    serialize_map<types::player_id_t, Position>(player_positions, send_int32, send_key, send_position);
+
+    // Serialize vector with blocks positions.
+    serialize_vector<Position>(blocks, send_int32, send_position);
+
+    // Serialize vector with bombs.
+    auto send_bomb = [&](Bomb t){ t.serialize(handler); };
+    serialize_vector<Bomb>(bombs, send_int32, send_bomb);
+
+    // Serialize vector with explosions.
+    serialize_vector<Position>(explosions, send_int32, send_position);
+
+    // Serialize map with scores.
+    auto send_score = [&](types::score_t t) { 
+        handler.append_to_outcoming_packet<types::score_t>(t); };
+    serialize_map<types::player_id_t, types::score_t>(scores, send_int32, send_key, send_score);
 }
 
 ClientMessageManager::ClientMessageManager(TCPHandler& tcp_handler_, UDPHandler& udp_handler_) : 
@@ -315,6 +380,15 @@ void ClientMessageManager::send_server_message(Move& message)
 void ClientMessageManager::send_gui_message(Lobby& message)
 {
     udp_handler.append_to_outcoming_packet<types::message_id_t>(guiClientCodes::lobby);
+    message.serialize(udp_handler);
+
+    // Send the packet.
+    udp_handler.flush_outcoming_packet();
+}
+
+void ClientMessageManager::send_gui_message(Game& message)
+{
+    udp_handler.append_to_outcoming_packet<types::message_id_t>(guiClientCodes::game);
     message.serialize(udp_handler);
 
     // Send the packet.

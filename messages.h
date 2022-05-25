@@ -74,6 +74,8 @@ struct Position {
 
     Position() = default;
     Position(TCPHandler& handler);
+
+    void serialize(UDPHandler&);
 };
 
 struct BombPlaced {
@@ -125,6 +127,13 @@ struct GameEnded {
     GameEnded(TCPHandler& handler);
 };
 
+struct Bomb {
+    Position position;
+    types::bomb_timer_t timer;
+
+    void serialize(UDPHandler&);
+};
+
 struct Lobby {
     std::string server_name;
     types::players_count_t players_count;
@@ -136,11 +145,6 @@ struct Lobby {
     std::map<types::player_id_t, Player> players;
 
     void serialize(UDPHandler&);
-};
-
-struct Bomb {
-    Position position;
-    types::bomb_timer_t timer;
 };
 
 struct Game {

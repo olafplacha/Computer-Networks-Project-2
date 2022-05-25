@@ -144,6 +144,11 @@ struct Lobby {
     types::bomb_timer_t bomb_timer;
     std::map<types::player_id_t, Player> players;
 
+    Lobby() = default;
+    /* Instantiate Lobby based on the first message from the server. */
+    Lobby(Hello&);
+    /* Change Lobby's state when a new player is accepted */
+    void accept(AcceptedPlayer&);
     void serialize(UDPHandler&);
 };
 
@@ -160,6 +165,11 @@ struct Game {
     std::vector<Position> explosions;
     std::map<types::player_id_t, types::score_t> scores;
 
+    Game() = default;
+    /* Instantiate Game based on the messages from the server. */
+    Game(Hello&, GameStarted&);
+    /* Change Game's state based on the Turn received. */
+    void apply_turn(Turn&);
     void serialize(UDPHandler&);
 };
 

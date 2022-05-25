@@ -236,6 +236,22 @@ void Bomb::serialize(UDPHandler& handler)
     handler.append_to_outcoming_packet<types::bomb_timer_t>(timer);
 }
 
+Lobby::Lobby(Hello& hello)
+{
+    server_name = hello.server_name;
+    players_count = hello.players_count;
+    size_x = hello.size_x;
+    size_y = hello.size_y;
+    game_length = hello.game_length;
+    explosion_radius = hello.explosion_radius;
+    bomb_timer = hello.bomber_timer;
+}
+
+void Lobby::accept(AcceptedPlayer& player)
+{
+    players.insert({player.id, player.player});
+}
+
 void Lobby::serialize(UDPHandler& handler)
 {
     // Serialize server name.
@@ -257,6 +273,24 @@ void Lobby::serialize(UDPHandler& handler)
         handler.append_to_outcoming_packet<types::player_id_t>(t); };
     auto send_val = [&](Player t){ t.serialize(handler); };
     serialize_map<types::player_id_t, Player>(players, send_int32, send_key, send_val);
+}
+
+Game::Game(Hello& hello, GameStarted& start)
+{
+    server_name = hello.server_name;
+    size_x = hello.size_x;
+    size_y = hello.size_y;
+    game_length = hello.game_length;
+    turn = 0;
+    players = start.players;
+
+    for(const auto& [id, player] : players) {
+        // Initialize players' positions.
+        Position p;
+        player_positions.insert({id, p});
+        // Initialize players' scores.
+        scores.insert({id, 0});
+    }
 }
 
 void Game::serialize(UDPHandler& handler)

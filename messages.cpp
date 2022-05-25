@@ -166,6 +166,11 @@ Position::Position(TCPHandler& handler)
     y = read_element<types::size_xy_t>(handler);
 }
 
+bool Position::operator==(const Position& rhs) const
+{
+    return x == rhs.x && y == rhs.y;
+}
+
 void Position::serialize(UDPHandler& handler)
 {
     handler.append_to_outcoming_packet<types::size_xy_t>(x);
@@ -291,6 +296,95 @@ Game::Game(Hello& hello, GameStarted& start)
         // Initialize players' scores.
         scores.insert({id, 0});
     }
+    bomber_timer = hello.bomber_timer;
+}
+
+void Game::apply_event(BombPlaced& event)
+{
+    // Add a new bomb.
+    Bomb bomb;
+    bomb.id = event.id;
+    bomb.position = event.position;
+    bomb.timer = bomber_timer;
+
+    bombs.push_back(bomb);
+}
+
+void Game::apply_event(BombExploded& event)
+{
+    // Remove the bomb.
+    for (size_t i = 0; i < bombs.size(); i++)
+    {
+        if (event.id == bombs.at(i).id) {
+            bombs.erase(bombs.begin() + i);
+            break;
+        }
+    }
+    
+    // Mark destroyed robots.
+    for (const types::player_id_t& id : event.robots_destroyed) {
+        turn_robots_destroyed.insert(id);
+    }
+
+    // Remove destroyed blocks.
+    for (const Position& pos : event.blocks_destroyed) {
+        for (size_t i = 0; i < blocks.size(); i++)
+        {
+            if (blocks.at(i) == pos) {
+                blocks.erase(blocks.begin() + i);
+                break;
+            }
+        }
+    }
+}
+
+void Game::apply_event(PlayerMoved& event)
+{
+    // Change player's position.
+    auto it = player_positions.find(event.id);
+    if (it != player_positions.end()) {
+        it->second = event.position;
+    }
+}
+
+void Game::apply_event(BlockPlaced& event)
+{   
+    // Add a new block.
+    blocks.push_back(event.position);
+}
+
+void Game::decrease_bomb_timers()
+{
+    for(Bomb& bomb : bombs) {
+        bomb.timer -= 1;
+    }
+}
+
+void Game::update_scores()
+{
+    for(const types::player_id_t& id : turn_robots_destroyed) {
+        auto it = scores.find(id);
+        if (it != scores.end()) {
+            it->second += 1;
+        }
+    }
+
+    // Clear the set for the next turn.
+    turn_robots_destroyed.clear();
+}
+
+
+void Game::apply_turn(Turn& turn_message) 
+{
+    turn = turn_message.turn;
+    decrease_bomb_timers();
+
+    for (Event& event : turn_message.events) {
+        // Apply each event to the state of the game.
+        std::visit([&](auto&& arg){ apply_event(arg); }, event);
+    }
+
+    update_scores();
 }
 
 void Game::serialize(UDPHandler& handler)

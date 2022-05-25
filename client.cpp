@@ -39,26 +39,26 @@ int main(int argc, char* argv[])
         std::visit([&](auto&& arg){ manager.send_server_message(arg); }, m);
     }
 
-    Lobby l;
-    l.server_name = op.player_name;
-    l.players_count = 2;
-    l.size_x = 99;
-    l.size_y = 1909;
-    l.game_length = 1111;
-    l.explosion_radius = 90;
-    l.bomb_timer = 978;
-    Player p0;
-    p0.address = "123:456";
-    p0.name = "damian";
-    Player p1;
-    p1.address = "localhost";
-    p1.name = "olaf";
-    std::map<types::player_id_t, Player> m;
-    m.insert({9, p0});
-    m.insert({92, p1});
-    l.players = m;
+    // Lobby l;
+    // l.server_name = op.player_name;
+    // l.players_count = 2;
+    // l.size_x = 99;
+    // l.size_y = 1909;
+    // l.game_length = 1111;
+    // l.explosion_radius = 90;
+    // l.bomb_timer = 978;
+    // Player p0;
+    // p0.address = "123:456";
+    // p0.name = "damian";
+    // Player p1;
+    // p1.address = "localhost";
+    // p1.name = "olaf";
+    // std::map<types::player_id_t, Player> m;
+    // m.insert({9, p0});
+    // m.insert({92, p1});
+    // l.players = m;
 
-    manager.send_gui_message(l);
+    // manager.send_gui_message(l);
 
     // Join message0(op.player_name);
     // manager.send_server_message(message0);

@@ -5,6 +5,8 @@
 #include <variant>
 #include <vector>
 #include <map>
+#include <set>
+#include <unordered_set>
 #include "network_handler.h"
 
 enum class Direction : std::underlying_type_t<std::byte> { Up, Right, Down, Left };
@@ -58,14 +60,14 @@ struct AcceptedPlayer {
     Player player;
 
     AcceptedPlayer() = default;
-    AcceptedPlayer(TCPHandler& handler);
+    AcceptedPlayer(TCPHandler&);
 };
 
 struct GameStarted {
     std::map<types::player_id_t, Player> players;
 
     GameStarted() = default;
-    GameStarted(TCPHandler& handler);
+    GameStarted(TCPHandler&);
 };
 
 struct Position {
@@ -73,7 +75,9 @@ struct Position {
     types::size_xy_t y;
 
     Position() = default;
-    Position(TCPHandler& handler);
+    Position(TCPHandler&);
+
+    bool operator==(const Position&) const;
 
     void serialize(UDPHandler&);
 };
@@ -130,47 +134,64 @@ struct GameEnded {
 struct Bomb {
     Position position;
     types::bomb_timer_t timer;
+    /* Not serialized */
+    types::bomb_id_t id;
 
     void serialize(UDPHandler&);
 };
 
 struct Lobby {
-    std::string server_name;
-    types::players_count_t players_count;
-    types::size_xy_t size_x;
-    types::size_xy_t size_y;
-    types::game_length_t game_length;
-    types::explosion_radius_t explosion_radius;
-    types::bomb_timer_t bomb_timer;
-    std::map<types::player_id_t, Player> players;
+    public:
+        Lobby() = default;
+        /* Instantiate Lobby based on the first message from the server. */
+        Lobby(Hello&);
+        /* Change Lobby's state when a new player is accepted */
+        void accept(AcceptedPlayer&);
+        void serialize(UDPHandler&);
 
-    Lobby() = default;
-    /* Instantiate Lobby based on the first message from the server. */
-    Lobby(Hello&);
-    /* Change Lobby's state when a new player is accepted */
-    void accept(AcceptedPlayer&);
-    void serialize(UDPHandler&);
+    private:
+        std::string server_name;
+        types::players_count_t players_count;
+        types::size_xy_t size_x;
+        types::size_xy_t size_y;
+        types::game_length_t game_length;
+        types::explosion_radius_t explosion_radius;
+        types::bomb_timer_t bomb_timer;
+        std::map<types::player_id_t, Player> players;    
 };
 
-struct Game {
-    std::string server_name;
-    types::size_xy_t size_x;
-    types::size_xy_t size_y;
-    types::game_length_t game_length;
-    types::turn_t turn;
-    std::map<types::player_id_t, Player> players;
-    std::map<types::player_id_t, Position> player_positions;
-    std::vector<Position> blocks;
-    std::vector<Bomb> bombs;
-    std::vector<Position> explosions;
-    std::map<types::player_id_t, types::score_t> scores;
+class Game {
+    public:
+        Game() = default;
+        /* Instantiate Game based on the messages from the server. */
+        Game(Hello&, GameStarted&);
+        /* Change Game's state based on the Turn received. */
+        void apply_turn(Turn&);
+        void serialize(UDPHandler&);
 
-    Game() = default;
-    /* Instantiate Game based on the messages from the server. */
-    Game(Hello&, GameStarted&);
-    /* Change Game's state based on the Turn received. */
-    void apply_turn(Turn&);
-    void serialize(UDPHandler&);
+    private:
+        void apply_event(BombPlaced&);
+        void apply_event(BombExploded&);
+        void apply_event(PlayerMoved&);
+        void apply_event(BlockPlaced&);
+
+        void decrease_bomb_timers();
+        void update_scores();
+        
+        std::string server_name;
+        types::size_xy_t size_x;
+        types::size_xy_t size_y;
+        types::game_length_t game_length;
+        types::turn_t turn;
+        std::map<types::player_id_t, Player> players;
+        std::map<types::player_id_t, Position> player_positions;
+        std::vector<Position> blocks;
+        std::vector<Bomb> bombs;
+        std::vector<Position> explosions;
+        std::map<types::player_id_t, types::score_t> scores;
+        /* Not serialized. */
+        types::bomb_timer_t bomber_timer;
+        std::set<types::player_id_t> turn_robots_destroyed;
 };
 
 namespace serverClientCodes {

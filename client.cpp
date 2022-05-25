@@ -53,7 +53,6 @@ void serverClientGuiStream(ClientMessageManager& manager)
 {
     try {
         ServerMessage message;
-
         message = manager.read_server_message();
         if (!std::holds_alternative<Hello>(message)) {
             throw std::runtime_error("Hello expected as the first message from the server!");
@@ -63,7 +62,6 @@ void serverClientGuiStream(ClientMessageManager& manager)
 
         while (true) {
             // New game is about to be started.
-            state = LOBBY;
             Lobby lobby(hello);
             manager.send_gui_message(lobby);
 

@@ -178,6 +178,7 @@ class Game {
         void decrease_bomb_timers();
         void update_scores();
         
+        /* Serialized */
         std::string server_name;
         types::size_xy_t size_x;
         types::size_xy_t size_y;

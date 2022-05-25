@@ -31,27 +31,13 @@ int main(int argc, char* argv[])
     UDPHandler udp_handler(op.port, op.gui_address, op.gui_port, UDP_BUFF_SIZE);
     ClientMessageManager manager(tcp_handler, udp_handler);
 
-    
+    Join join(op.player_name);
+    manager.send_server_message(join);
 
-    // while (true)
-    // {
-    //     InputMessage m = messager.read_gui_message();
-    //     if (std::holds_alternative<PlaceBomb>(m)) {
-    //         std::cout << "PlaceBomb\n";
-    //     }
-    //     else if (std::holds_alternative<PlaceBlock>(m)) {
-    //         std::cout << "PlaceBlock\n";
-    //     }
-    //     else if (std::holds_alternative<Move>(m)) {
-    //         std::cout << "Move " << static_cast<int>(std::get<Move>(m).direction) << '\n';
-    //     }
-    //     else if (std::holds_alternative<InvalidMessage>(m)) {
-    //         std::cout << "InvalidMessage\n";
-    //     }
-    //     else {
-    //         exit(EXIT_FAILURE);
-    //     }
-    // }
+    while (true) {
+        InputMessage m = manager.read_gui_message();
+        std::visit([&](auto&& arg){ manager.send_server_message(arg); }, m);
+    }
 
     Lobby l;
     l.server_name = op.player_name;

@@ -360,12 +360,12 @@ void ClientMessageManager::send_server_message(Join& message)
     message.serialize(tcp_handler);
 }
 
-void ClientMessageManager::send_server_message([[maybe_unused]] PlaceBomb& message)
+void ClientMessageManager::send_server_message(PlaceBomb&)
 {
     tcp_handler.send_element<types::message_id_t>(serverClientCodes::placeBomb);
 }
 
-void ClientMessageManager::send_server_message([[maybe_unused]] PlaceBlock& message)
+void ClientMessageManager::send_server_message(PlaceBlock&)
 {
     tcp_handler.send_element<types::message_id_t>(serverClientCodes::placeBlock);
 }
@@ -375,6 +375,9 @@ void ClientMessageManager::send_server_message(Move& message)
     tcp_handler.send_element<types::message_id_t>(serverClientCodes::move);
     message.serialize(tcp_handler);
 }
+
+// Ignore.
+void ClientMessageManager::send_server_message(InvalidMessage&) {};
 
 // Over UDP.
 void ClientMessageManager::send_gui_message(Lobby& message)

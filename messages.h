@@ -201,6 +201,7 @@ class ClientMessageManager
         void send_server_message(PlaceBomb&);
         void send_server_message(PlaceBlock&);
         void send_server_message(Move&);
+        void send_server_message(InvalidMessage&);
 
         void send_gui_message(Lobby&);
         void send_gui_message(Game&);

@@ -123,6 +123,8 @@ int main(int argc, char* argv[])
     state = LOBBY;
     join_sent = false;
 
+    std::cout << "Let the fun begin!\n";
+
     // Create threads for (gui -> client -> server) and (server -> client -> gui) communication.
     std::thread t0{[&manager, &op]{ guiClientServerStream(manager, op.player_name); }};
     std::thread t1{[&manager]{ serverClientGuiStream(manager); }};

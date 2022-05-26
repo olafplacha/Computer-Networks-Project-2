@@ -172,7 +172,6 @@ class UDPHandler : public NetworkHandler {
 
         template<typename T>
         void append_to_outcoming_packet(T element) {
-            std::cout << element << '\n';
             // Check if the element will fit into the send buffer.
             if (send_buff + send_buff_size < send_pointer + sizeof(T)) {
                 throw UDPError("Data does not fit into the send buffer!");

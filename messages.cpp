@@ -297,6 +297,7 @@ Game::Game(Hello& hello, GameStarted& start)
         scores.insert({id, 0});
     }
     bomber_timer = hello.bomber_timer;
+    explosion_radius = hello.explosion_radius;
 }
 
 void Game::apply_event(BombPlaced& event)
@@ -310,12 +311,49 @@ void Game::apply_event(BombPlaced& event)
     bombs.push_back(bomb);
 }
 
+void Game::explode_one_direction(const Position& pos, types::coord_t dx, types::coord_t dy)
+{
+    types::coord_t curr_x = pos.x;
+    types::coord_t curr_y = pos.y;
+    types::explosion_radius_t curr_radius = 0;
+
+    while (curr_x >= 0 && curr_x < size_x && curr_y >= 0 && curr_y < size_y && curr_radius <= explosion_radius) {
+        // Casting is safe because of the above condition.
+        Position p;
+        p.x = (types::size_xy_t) curr_x;
+        p.y = (types::size_xy_t) curr_y;
+
+        // Add current position to explosions.
+        explosions.insert(p);
+        
+        if (blocks.find(p) != blocks.end()) {
+            // Current position is blocked.
+            return;
+        }
+        curr_x += dx;
+        curr_y += dy;
+        curr_radius++;
+    }
+}
+
+void Game::find_explosions(const Bomb& bomb)
+{
+    Position pos = bomb.position;
+    explode_one_direction(pos, 0, 1);
+    explode_one_direction(pos, 1, 0);
+    explode_one_direction(pos, 0, -1);
+    explode_one_direction(pos, -1, 0);
+}
+
 void Game::apply_event(BombExploded& event)
 {
-    // Remove the bomb.
+    // Find the exploding bomb.
     for (size_t i = 0; i < bombs.size(); i++)
     {
         if (event.id == bombs.at(i).id) {
+            // Find the exploded positions.
+            find_explosions(bombs.at(i));
+            // Remove the bomb.
             bombs.erase(bombs.begin() + i);
             break;
         }
@@ -326,15 +364,9 @@ void Game::apply_event(BombExploded& event)
         turn_robots_destroyed.insert(id);
     }
 
-    // Remove destroyed blocks.
+    // Add removed blocks.
     for (const Position& pos : event.blocks_destroyed) {
-        for (size_t i = 0; i < blocks.size(); i++)
-        {
-            if (blocks.at(i) == pos) {
-                blocks.erase(blocks.begin() + i);
-                break;
-            }
-        }
+        turn_blocks_destroyed.insert(pos);
     }
 }
 
@@ -350,7 +382,7 @@ void Game::apply_event(PlayerMoved& event)
 void Game::apply_event(BlockPlaced& event)
 {   
     // Add a new block.
-    blocks.push_back(event.position);
+    blocks.insert(event.position);
 }
 
 void Game::decrease_bomb_timers()
@@ -373,15 +405,24 @@ void Game::update_scores()
     turn_robots_destroyed.clear();
 }
 
-
 void Game::apply_turn(Turn& turn_message) 
 {
     turn = turn_message.turn;
     decrease_bomb_timers();
 
+    // Clear explosion set from the previous turn.
+    explosions.clear();
+    // Clear destroyed blocks from the previous turn.
+    turn_blocks_destroyed.clear();
+
     for (Event& event : turn_message.events) {
         // Apply each event to the state of the game.
         std::visit([&](auto&& arg){ apply_event(arg); }, event);
+    }
+
+    // After all bombs exploded, remove destroyed blocks.
+    for (const Position& pos : turn_blocks_destroyed) {
+        blocks.erase(pos);
     }
 
     update_scores();
@@ -412,14 +453,22 @@ void Game::serialize(UDPHandler& handler)
     serialize_map<types::player_id_t, Position>(player_positions, send_int32, send_key, send_position);
 
     // Serialize vector with blocks positions.
-    serialize_vector<Position>(blocks, send_int32, send_position);
+    std::vector<Position> blocks_vec;
+    for (const Position& p : blocks) {
+        blocks_vec.push_back(p);
+    }
+    serialize_vector<Position>(blocks_vec, send_int32, send_position);
 
     // Serialize vector with bombs.
     auto send_bomb = [&](Bomb t){ t.serialize(handler); };
     serialize_vector<Bomb>(bombs, send_int32, send_bomb);
 
     // Serialize vector with explosions.
-    serialize_vector<Position>(explosions, send_int32, send_position);
+    std::vector<Position> explosions_vec;
+    for (const Position& p : explosions) {
+        explosions_vec.push_back(p);
+    }
+    serialize_vector<Position>(explosions_vec, send_int32, send_position);
 
     // Serialize map with scores.
     auto send_score = [&](types::score_t t) { 

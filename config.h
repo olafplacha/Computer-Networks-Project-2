@@ -29,6 +29,8 @@ namespace types
     using map_len_t = uint32_t;
     using vec_len_t = uint32_t;
 
+    using coord_t = int64_t;
+
     const int MAX_TYPE_SIZE = 8;
     const int MAX_STR_SIZE = 255;
 }

@@ -80,6 +80,16 @@ struct Position {
     bool operator==(const Position&) const;
 
     void serialize(UDPHandler&);
+
+    struct HashFunction
+    {
+        size_t operator()(const Position& p) const
+        {
+            size_t xHash = std::hash<int>()(p.x);
+            size_t yHash = std::hash<int>()(p.y) << 1;
+            return xHash ^ yHash;
+        }
+    };
 };
 
 struct BombPlaced {
@@ -177,6 +187,8 @@ class Game {
 
         void decrease_bomb_timers();
         void update_scores();
+        void find_explosions(const Bomb&);
+        void explode_one_direction(const Position&, types::coord_t, types::coord_t);
         
         /* Serialized */
         std::string server_name;
@@ -186,13 +198,16 @@ class Game {
         types::turn_t turn;
         std::map<types::player_id_t, Player> players;
         std::map<types::player_id_t, Position> player_positions;
-        std::vector<Position> blocks;
+        std::unordered_set<Position, Position::HashFunction> blocks;
         std::vector<Bomb> bombs;
-        std::vector<Position> explosions;
+        std::unordered_set<Position, Position::HashFunction> explosions;
         std::map<types::player_id_t, types::score_t> scores;
         /* Not serialized. */
         types::bomb_timer_t bomber_timer;
+        types::explosion_radius_t explosion_radius;
         std::set<types::player_id_t> turn_robots_destroyed;
+        std::unordered_set<Position, Position::HashFunction> turn_blocks_destroyed;
+        std::set<Position> turn_explosions;
 };
 
 namespace serverClientCodes {

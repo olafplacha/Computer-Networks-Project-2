@@ -13,209 +13,209 @@ void convert_network_to_host_byte_order(uint8_t* buffer, size_t n);
 void convert_host_to_network_byte_order(uint8_t* buffer, size_t n);
 
 class TCPError: public std::runtime_error {
-    public:
-        TCPError(const char* w) : std::runtime_error(w) {}
+public:
+    TCPError(const char* w) : std::runtime_error(w) {}
 };
 
 class UDPError: public std::runtime_error {
-    public:
-        UDPError(const char* w) : std::runtime_error(w) {}
+public:
+    UDPError(const char* w) : std::runtime_error(w) {}
 };
 
 class NetworkHandler {
-    public:
-        NetworkHandler(size_t recv_buff_size_, size_t send_buff_size_);
+public:
+    NetworkHandler(size_t recv_buff_size_, size_t send_buff_size_);
 
-        ~NetworkHandler();
+    ~NetworkHandler();
 
-    protected:
-        uint8_t* recv_buff;
-        size_t recv_buff_size;
-        uint8_t* send_buff;
-        size_t send_buff_size;
+protected:
+    uint8_t* recv_buff;
+    size_t recv_buff_size;
+    uint8_t* send_buff;
+    size_t send_buff_size;
 
-        /**
-         * @brief Allocates space for a buffer.
-         * 
-         * @param n Size of the buffer.
-         * @return uint8_t* Pointer to the buffer.
-         */
-        uint8_t* allocate_buffer_space(size_t n);
+    /**
+     * @brief Allocates space for a buffer.
+     *
+     * @param n Size of the buffer.
+     * @return uint8_t* Pointer to the buffer.
+     */
+    uint8_t* allocate_buffer_space(size_t n);
 };
 
 /**
  * @brief Class wrapping reading and writing on a TCP socket. Objects of this class can be
- * instantiated providing previously created socket or by providing name and port of the 
+ * instantiated providing previously created socket or by providing name and port of the
  * server, with which connection will be established during object construction.
- * 
+ *
  */
 class TCPHandler : public NetworkHandler {
-    public:
-        /**
-         * @brief Construct a new TCPHandler object using previously created socket.
-         * 
-         * @param socket_fd_ Connected TCP socket file descriptor.
-         * @param buff_size_ Size of the receive/send buffers.
-         */
-        TCPHandler(int socket_fd_, size_t buff_size_);
+public:
+    /**
+     * @brief Construct a new TCPHandler object using previously created socket.
+     *
+     * @param socket_fd_ Connected TCP socket file descriptor.
+     * @param buff_size_ Size of the receive/send buffers.
+     */
+    TCPHandler(int socket_fd_, size_t buff_size_);
 
-        /**
-         * @brief Construct a new TCPHandler object using provided address and port of the server.
-         * 
-         * @param address Address of the server.
-         * @param port Port of the server.
-         * @param buff_size_ Size of the receive/send buffers.
-         */
-        TCPHandler(std::string& address, types::port_t port, size_t buff_size_);
+    /**
+     * @brief Construct a new TCPHandler object using provided address and port of the server.
+     *
+     * @param address Address of the server.
+     * @param port Port of the server.
+     * @param buff_size_ Size of the receive/send buffers.
+     */
+    TCPHandler(std::string& address, types::port_t port, size_t buff_size_);
 
-        ~TCPHandler();
+    ~TCPHandler();
 
-        /**
-         * @brief Read subsequent n bytes from the TCP stream, convert endianness if needed and
-         * put the bytes into the provided buffer. Because of endianness convertion, the method
-         * supports only 1, 2, 4 and 8 as the value of n. Moreover, note that this method 
-         * performs a read on the socket only if it has to (lazily).
-         * 
-         * @param n Number of bytes to be read.
-         * @param buff Pointer to buffer of size at least n in which read bytes are returned.
-         * @throws TCPError.
-         */ 
-        void read_n_bytes(size_t n, uint8_t* buff); // TODO - template this function!
-        
-        // Send element over TCP connection.
-        template<typename T>
-        void send_element(T element)
-        {
-            // Put the bytes into the send buffer.
-            std::memcpy(send_buff, &element, sizeof(T));
+    /**
+     * @brief Read subsequent n bytes from the TCP stream, convert endianness if needed and
+     * put the bytes into the provided buffer. Because of endianness convertion, the method
+     * supports only 1, 2, 4 and 8 as the value of n. Moreover, note that this method
+     * performs a read on the socket only if it has to (lazily).
+     *
+     * @param n Number of bytes to be read.
+     * @param buff Pointer to buffer of size at least n in which read bytes are returned.
+     * @throws TCPError.
+     */
+    void read_n_bytes(size_t n, uint8_t* buff); // TODO - template this function!
 
-            // Convert the endianness if needed.
-            convert_host_to_network_byte_order(send_buff, sizeof(T));
+    // Send element over TCP connection.
+    template<typename T>
+    void send_element(T element)
+    {
+        // Put the bytes into the send buffer.
+        std::memcpy(send_buff, &element, sizeof(T));
 
-            send_n_bytes(sizeof(T), send_buff);
-        }
+        // Convert the endianness if needed.
+        convert_host_to_network_byte_order(send_buff, sizeof(T));
 
-        // Delete copy constructor and copy assignment.
-        TCPHandler(TCPHandler const&) = delete;
-        void operator=(TCPHandler const&) = delete;
+        send_n_bytes(sizeof(T), send_buff);
+    }
 
-    private:
-        int socket_fd;
-        std::deque<char> recv_deque;
+    // Delete copy constructor and copy assignment.
+    TCPHandler(TCPHandler const&) = delete;
+    void operator=(TCPHandler const&) = delete;
 
-        /**
-         * @brief Sets up a TCP connection. Sets TCP_NODELAY option for instant message outbound.
-         * 
-         * @param address Address of the server.
-         * @param port Port of the server.
-         * @return int File descriptor of the connected socket.
-         */
-        int set_up_tcp_connection(std::string& address, types::port_t port);
+private:
+    int socket_fd;
+    std::deque<char> recv_deque;
 
-        /**
-         * @brief Reads from the TCP stream as long as there are not enough bytes in recv_deque.
-         * 
-         * @param n Minimum number of bytes in recv_deque when returning.
-         * @throws TCPError.
-         */
-        void return_when_n_bytes_in_deque(size_t n);
+    /**
+     * @brief Sets up a TCP connection. Sets TCP_NODELAY option for instant message outbound.
+     *
+     * @param address Address of the server.
+     * @param port Port of the server.
+     * @return int File descriptor of the connected socket.
+     */
+    int set_up_tcp_connection(std::string& address, types::port_t port);
 
-        void send_n_bytes(size_t n, uint8_t* buff);
+    /**
+     * @brief Reads from the TCP stream as long as there are not enough bytes in recv_deque.
+     *
+     * @param n Minimum number of bytes in recv_deque when returning.
+     * @throws TCPError.
+     */
+    void return_when_n_bytes_in_deque(size_t n);
+
+    void send_n_bytes(size_t n, uint8_t* buff);
 };
 
 class UDPHandler : public NetworkHandler {
-    public:
-        /**
-         * @brief Construct a new UDPHandler object.
-         * 
-         * @param recv_port Port on which the handler listens to incoming UDP packets.
-         * @param send_address Address of host to which UDP packets are sent.
-         * @param send_port Port of host to which UDP packets are sent.
-         * @param buff_size_ Size of the receive/send buffers.
-         */
-        UDPHandler(types::port_t recv_port, std::string send_address, types::port_t send_port, 
-            size_t buff_size_);
+public:
+    /**
+     * @brief Construct a new UDPHandler object.
+     *
+     * @param recv_port Port on which the handler listens to incoming UDP packets.
+     * @param send_address Address of host to which UDP packets are sent.
+     * @param send_port Port of host to which UDP packets are sent.
+     * @param buff_size_ Size of the receive/send buffers.
+     */
+    UDPHandler(types::port_t recv_port, std::string send_address, types::port_t send_port,
+               size_t buff_size_);
 
-        ~UDPHandler();
+    ~UDPHandler();
 
-        /**
-         * @brief Reads incoming UDP packet and puts it into recv_buff.
-         * 
-         * @return size_t Size of the incoming UDP packet.
-         */
-        size_t read_incoming_packet();
+    /**
+     * @brief Reads incoming UDP packet and puts it into recv_buff.
+     *
+     * @return size_t Size of the incoming UDP packet.
+     */
+    size_t read_incoming_packet();
 
-        /**
-         * @brief Reads another element of the UDP packet. Advances pointer to the buffer by
-         * the size of the element.
-         * 
-         * @tparam T Type of the element.
-         * @return T Another element of the UDP packet.
-         */
-        template<typename T>
-        T read_next_packet_element()
-        {
-            // Check if there is enough data left in the buffer.
-            if (recv_buff + packet_size < recv_pointer + sizeof(T)) {
-                throw UDPError("Attemp to read data out of UDP packet's bound!");
-            }
-
-            // Convert the endianness if needed.
-            convert_network_to_host_byte_order(recv_pointer, sizeof(T));
-            T element = *(T *) recv_pointer;
-
-            // Advance the pointer.
-            recv_pointer += sizeof(T);
-
-            return element;
+    /**
+     * @brief Reads another element of the UDP packet. Advances pointer to the buffer by
+     * the size of the element.
+     *
+     * @tparam T Type of the element.
+     * @return T Another element of the UDP packet.
+     */
+    template<typename T>
+    T read_next_packet_element()
+    {
+        // Check if there is enough data left in the buffer.
+        if (recv_buff + packet_size < recv_pointer + sizeof(T)) {
+            throw UDPError("Attemp to read data out of UDP packet's bound!");
         }
 
-        template<typename T>
-        void append_to_outcoming_packet(T element) {
-            // Check if the element will fit into the send buffer.
-            if (send_buff + send_buff_size < send_pointer + sizeof(T)) {
-                throw UDPError("Data does not fit into the send buffer!");
-            }
+        // Convert the endianness if needed.
+        convert_network_to_host_byte_order(recv_pointer, sizeof(T));
+        T element = *(T *) recv_pointer;
 
-            std::memcpy(send_pointer, &element, sizeof(T));
-            convert_host_to_network_byte_order(send_pointer, sizeof(T));
-            
-            // Advance the pointer.
-            send_pointer += sizeof(T);
+        // Advance the pointer.
+        recv_pointer += sizeof(T);
+
+        return element;
+    }
+
+    template<typename T>
+    void append_to_outcoming_packet(T element) {
+        // Check if the element will fit into the send buffer.
+        if (send_buff + send_buff_size < send_pointer + sizeof(T)) {
+            throw UDPError("Data does not fit into the send buffer!");
         }
 
-        void flush_outcoming_packet();
+        std::memcpy(send_pointer, &element, sizeof(T));
+        convert_host_to_network_byte_order(send_pointer, sizeof(T));
 
-        // Delete copy constructor and copy assignment.
-        UDPHandler(UDPHandler const&) = delete;
-        void operator=(UDPHandler const&) = delete;
+        // Advance the pointer.
+        send_pointer += sizeof(T);
+    }
 
-    private:
-        int recv_socket_fd;
-        int send_socket_fd;
-        // Size of the last received UDP packet. 
-        size_t packet_size;
-        // Keeps track of the next element of the packet to be read.
-        uint8_t* recv_pointer;
-        // Keeps track of free space in the send buffer.
-        uint8_t* send_pointer;
+    void flush_outcoming_packet();
 
-        /**
-         * @brief Open a socket for reading UDP packets.
-         * 
-         * @param port Port on which UDP packets are read.
-         * @return int File descriptor of the UDP socket.
-         */
-        int set_up_udp_listening(types::port_t port);
+    // Delete copy constructor and copy assignment.
+    UDPHandler(UDPHandler const&) = delete;
+    void operator=(UDPHandler const&) = delete;
 
-        /**
-         * @brief Open a socket for sending UDP packets and bind it to the provided address.
-         * 
-         * @param address Address of the host to which UPD packets will be sent.
-         * @param port Port of the host to which UDP packets will be sent.
-         * @return int File descriptor of the UDP socket.
-         */
-        int set_up_udp_sending(std::string address, types::port_t port);
+private:
+    int recv_socket_fd;
+    int send_socket_fd;
+    // Size of the last received UDP packet.
+    size_t packet_size;
+    // Keeps track of the next element of the packet to be read.
+    uint8_t* recv_pointer;
+    // Keeps track of free space in the send buffer.
+    uint8_t* send_pointer;
+
+    /**
+     * @brief Open a socket for reading UDP packets.
+     *
+     * @param port Port on which UDP packets are read.
+     * @return int File descriptor of the UDP socket.
+     */
+    int set_up_udp_listening(types::port_t port);
+
+    /**
+     * @brief Open a socket for sending UDP packets and bind it to the provided address.
+     *
+     * @param address Address of the host to which UPD packets will be sent.
+     * @param port Port of the host to which UDP packets will be sent.
+     * @return int File descriptor of the UDP socket.
+     */
+    int set_up_udp_sending(std::string address, types::port_t port);
 };
 
 #endif // NETWORK_HANDLER_H

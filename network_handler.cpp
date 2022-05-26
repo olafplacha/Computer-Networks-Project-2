@@ -10,7 +10,7 @@
 
 /**
  * @brief Converts first n bytes of the buffer from network to host byte order.
- * 
+ *
  * @param buffer Pointer to buffer with data.
  * @param n Number of bytes to convert.
  */
@@ -20,7 +20,7 @@ void convert_network_to_host_byte_order(uint8_t* buffer, size_t n)
     {
     case 1:
         // Nothing to be done.
-        return;   
+        return;
     case 2:
     {
         uint16_t before = *(uint16_t *) buffer;
@@ -49,7 +49,7 @@ void convert_network_to_host_byte_order(uint8_t* buffer, size_t n)
 
 /**
  * @brief Converts first n bytes of the buffer from host to network byte order.
- * 
+ *
  * @param buffer Pointer to buffer with data.
  * @param n Number of bytes to convert.
  */
@@ -59,7 +59,7 @@ void convert_host_to_network_byte_order(uint8_t* buffer, size_t n)
     {
     case 1:
         // Nothing to be done.
-        return;   
+        return;
     case 2:
     {
         uint16_t before = *(uint16_t *) buffer;
@@ -95,7 +95,7 @@ uint8_t* NetworkHandler::allocate_buffer_space(size_t n)
     return buff_ptr;
 }
 
-NetworkHandler::NetworkHandler(size_t recv_buff_size_, size_t send_buff_size_) : 
+NetworkHandler::NetworkHandler(size_t recv_buff_size_, size_t send_buff_size_) :
     recv_buff_size(recv_buff_size_), send_buff_size(send_buff_size_)
 {
     recv_buff = allocate_buffer_space(recv_buff_size_);
@@ -147,10 +147,10 @@ int TCPHandler::set_up_tcp_connection(std::string& address, types::port_t port)
     return fd;
 }
 
-TCPHandler::TCPHandler(int socket_fd_, size_t buff_size_) : 
+TCPHandler::TCPHandler(int socket_fd_, size_t buff_size_) :
     NetworkHandler(buff_size_, buff_size_), socket_fd(socket_fd_), recv_deque() {}
 
-TCPHandler::TCPHandler(std::string& address, types::port_t port, size_t buff_size_) : 
+TCPHandler::TCPHandler(std::string& address, types::port_t port, size_t buff_size_) :
     NetworkHandler(buff_size_, buff_size_), recv_deque()
 {
     socket_fd = set_up_tcp_connection(address, port);
@@ -222,7 +222,7 @@ int UDPHandler::set_up_udp_listening(types::port_t port)
     if (fd < 0) {
         throw std::runtime_error(std::strerror(errno));
     }
-    
+
     struct sockaddr_in6 address;
     address.sin6_family = AF_INET6;
     address.sin6_addr = in6addr_any;
@@ -239,7 +239,7 @@ int UDPHandler::set_up_udp_sending(std::string address, types::port_t port)
 {
     int err;
     struct addrinfo hints, *res;
-    
+
     memset(&hints, 0, sizeof(struct addrinfo));
     hints.ai_family = AF_UNSPEC;
     hints.ai_socktype = SOCK_DGRAM;
@@ -268,7 +268,7 @@ int UDPHandler::set_up_udp_sending(std::string address, types::port_t port)
 }
 
 UDPHandler::UDPHandler(types::port_t recv_port, std::string send_address, types::port_t send_port,
-    size_t buff_size_) : NetworkHandler(buff_size_, buff_size_), packet_size(0)
+                       size_t buff_size_) : NetworkHandler(buff_size_, buff_size_), packet_size(0)
 {
     recv_socket_fd = set_up_udp_listening(recv_port);
     send_socket_fd = set_up_udp_sending(send_address, send_port);
@@ -293,7 +293,7 @@ size_t UDPHandler::read_incoming_packet()
 }
 
 void UDPHandler::flush_outcoming_packet()
-{   
+{
     size_t bytes_to_send = send_pointer - send_buff;
     ssize_t bytes_sent = send(send_socket_fd, send_buff, bytes_to_send, 0);
     if (bytes_sent < 0) {

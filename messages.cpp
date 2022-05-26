@@ -17,7 +17,7 @@ static T read_element(TCPHandler& handler)
 
 template<typename K, typename V>
 static std::map<K, V> read_map(TCPHandler& handler, std::function<K(TCPHandler&)> fk,
-    std::function<V(TCPHandler&)> fv)
+                               std::function<V(TCPHandler&)> fv)
 {
     std::map<K, V> m;
 
@@ -61,8 +61,8 @@ static std::string read_string(TCPHandler& handler)
     return s;
 }
 
-void serialize_string(std::string& s, std::function<void (uint8_t)> send_int, 
-    std::function<void (char)> send_char)
+void serialize_string(std::string& s, std::function<void (uint8_t)> send_int,
+                      std::function<void (char)> send_char)
 {
     // Truncate string if too long.
     uint8_t n = types::MAX_STR_SIZE;
@@ -80,7 +80,7 @@ void serialize_string(std::string& s, std::function<void (uint8_t)> send_int,
 
 template<typename K, typename V>
 void serialize_map(std::map<K, V>& m, std::function<void (uint32_t)> send_int,
-    std::function<void (K)> send_key, std::function<void (V)> send_val)
+                   std::function<void (K)> send_key, std::function<void (V)> send_val)
 {
     // Maps of bigger size are not supported.
     uint32_t n = (uint32_t) m.size();
@@ -94,7 +94,7 @@ void serialize_map(std::map<K, V>& m, std::function<void (uint32_t)> send_int,
 
 template<typename T>
 void serialize_vector(std::vector<T>& v, std::function<void (uint32_t)> send_int,
-    std::function<void (T)> send_element)
+                      std::function<void (T)> send_element)
 {
     // Vectors of bigger size are not supported.
     uint32_t n = (uint32_t) v.size();
@@ -112,8 +112,12 @@ Join::Join(std::string& name_)
 
 void Join::serialize(TCPHandler& handler)
 {
-    serialize_string(name, [&](uint8_t t){ handler.send_element<uint8_t>(t); },
-        [&](char t){ handler.send_element<char>(t); });
+    serialize_string(name, [&](uint8_t t) {
+        handler.send_element<uint8_t>(t);
+    },
+    [&](char t) {
+        handler.send_element<char>(t);
+    });
 }
 
 Move::Move(Direction direction_) : direction(direction_) {}
@@ -142,8 +146,12 @@ Player::Player(TCPHandler& handler)
 
 void Player::serialize(UDPHandler& handler)
 {
-    auto send_int = [&](uint8_t t){ handler.append_to_outcoming_packet<uint8_t>(t); };
-    auto send_char = [&](char t){ handler.append_to_outcoming_packet<char>(t); };
+    auto send_int = [&](uint8_t t) {
+        handler.append_to_outcoming_packet<uint8_t>(t);
+    };
+    auto send_char = [&](char t) {
+        handler.append_to_outcoming_packet<char>(t);
+    };
     serialize_string(name, send_int, send_char);
     serialize_string(address, send_int, send_char);
 }
@@ -156,8 +164,10 @@ AcceptedPlayer::AcceptedPlayer(TCPHandler& handler)
 
 GameStarted::GameStarted(TCPHandler& handler)
 {
-    players = read_map<types::player_id_t, Player>(handler, read_element<types::player_id_t>, 
-        [&](TCPHandler& t){ return Player(t); });
+    players = read_map<types::player_id_t, Player>(handler, read_element<types::player_id_t>,
+    [&](TCPHandler& t) {
+        return Player(t);
+    });
 }
 
 Position::Position(TCPHandler& handler)
@@ -186,9 +196,11 @@ BombPlaced::BombPlaced(TCPHandler& handler)
 BombExploded::BombExploded(TCPHandler& handler)
 {
     id = read_element<types::bomb_id_t>(handler);
-    robots_destroyed = read_vector<types::player_id_t>(handler, 
-        read_element<types::player_id_t>);
-    blocks_destroyed = read_vector<Position>(handler, [&](TCPHandler& t){ return Position(t); });
+    robots_destroyed = read_vector<types::player_id_t>(handler,
+                       read_element<types::player_id_t>);
+    blocks_destroyed = read_vector<Position>(handler, [&](TCPHandler& t) {
+        return Position(t);
+    });
 }
 
 PlayerMoved::PlayerMoved(TCPHandler& handler)
@@ -221,7 +233,7 @@ static Event read_event(TCPHandler& handler)
     default:
         throw std::runtime_error("Unknown message received from the server!");
     }
-} 
+}
 
 Turn::Turn(TCPHandler& handler)
 {
@@ -231,8 +243,8 @@ Turn::Turn(TCPHandler& handler)
 
 GameEnded::GameEnded(TCPHandler& handler)
 {
-    scores = read_map<types::player_id_t, types::score_t>(handler, 
-        read_element<types::player_id_t>, read_element<types::score_t>);
+    scores = read_map<types::player_id_t, types::score_t>(handler,
+             read_element<types::player_id_t>, read_element<types::score_t>);
 }
 
 void Bomb::serialize(UDPHandler& handler)
@@ -260,8 +272,12 @@ void Lobby::accept(AcceptedPlayer& player)
 void Lobby::serialize(UDPHandler& handler)
 {
     // Serialize server name.
-    auto send_int8 = [&](uint8_t t){ handler.append_to_outcoming_packet<uint8_t>(t); };
-    auto send_char = [&](char t){ handler.append_to_outcoming_packet<char>(t); };
+    auto send_int8 = [&](uint8_t t) {
+        handler.append_to_outcoming_packet<uint8_t>(t);
+    };
+    auto send_char = [&](char t) {
+        handler.append_to_outcoming_packet<char>(t);
+    };
     serialize_string(server_name, send_int8, send_char);
 
     // Serialize other fields.
@@ -273,10 +289,15 @@ void Lobby::serialize(UDPHandler& handler)
     handler.append_to_outcoming_packet<types::bomb_timer_t>(bomb_timer);
 
     // Serialize map with players.
-    auto send_int32 = [&](uint32_t t){ handler.append_to_outcoming_packet<uint32_t>(t); };
-    auto send_key = [&](types::player_id_t t) { 
-        handler.append_to_outcoming_packet<types::player_id_t>(t); };
-    auto send_val = [&](Player t){ t.serialize(handler); };
+    auto send_int32 = [&](uint32_t t) {
+        handler.append_to_outcoming_packet<uint32_t>(t);
+    };
+    auto send_key = [&](types::player_id_t t) {
+        handler.append_to_outcoming_packet<types::player_id_t>(t);
+    };
+    auto send_val = [&](Player t) {
+        t.serialize(handler);
+    };
     serialize_map<types::player_id_t, Player>(players, send_int32, send_key, send_val);
 }
 
@@ -325,7 +346,7 @@ void Game::explode_one_direction(const Position& pos, types::coord_t dx, types::
 
         // Add current position to explosions.
         explosions.insert(p);
-        
+
         if (blocks.find(p) != blocks.end()) {
             // Current position is blocked.
             return;
@@ -358,7 +379,7 @@ void Game::apply_event(BombExploded& event)
             break;
         }
     }
-    
+
     // Mark destroyed robots.
     for (const types::player_id_t& id : event.robots_destroyed) {
         turn_robots_destroyed.insert(id);
@@ -380,7 +401,7 @@ void Game::apply_event(PlayerMoved& event)
 }
 
 void Game::apply_event(BlockPlaced& event)
-{   
+{
     // Add a new block.
     blocks.insert(event.position);
 }
@@ -405,7 +426,7 @@ void Game::update_scores()
     turn_robots_destroyed.clear();
 }
 
-void Game::apply_turn(Turn& turn_message) 
+void Game::apply_turn(Turn& turn_message)
 {
     turn = turn_message.turn;
     decrease_bomb_timers();
@@ -417,7 +438,9 @@ void Game::apply_turn(Turn& turn_message)
 
     for (Event& event : turn_message.events) {
         // Apply each event to the state of the game.
-        std::visit([&](auto&& arg){ apply_event(arg); }, event);
+        std::visit([&](auto&& arg) {
+            apply_event(arg);
+        }, event);
     }
 
     // After all bombs exploded, remove destroyed blocks.
@@ -431,8 +454,12 @@ void Game::apply_turn(Turn& turn_message)
 void Game::serialize(UDPHandler& handler)
 {
     // Serialize server name.
-    auto send_int8 = [&](uint8_t t){ handler.append_to_outcoming_packet<uint8_t>(t); };
-    auto send_char = [&](char t){ handler.append_to_outcoming_packet<char>(t); };
+    auto send_int8 = [&](uint8_t t) {
+        handler.append_to_outcoming_packet<uint8_t>(t);
+    };
+    auto send_char = [&](char t) {
+        handler.append_to_outcoming_packet<char>(t);
+    };
     serialize_string(server_name, send_int8, send_char);
 
     // Serialize other fields.
@@ -442,14 +469,21 @@ void Game::serialize(UDPHandler& handler)
     handler.append_to_outcoming_packet<types::turn_t>(turn);
 
     // Serialize map with players.
-    auto send_int32 = [&](uint32_t t){ handler.append_to_outcoming_packet<uint32_t>(t); };
-    auto send_key = [&](types::player_id_t t) { 
-        handler.append_to_outcoming_packet<types::player_id_t>(t); };
-    auto send_player = [&](Player t){ t.serialize(handler); };
+    auto send_int32 = [&](uint32_t t) {
+        handler.append_to_outcoming_packet<uint32_t>(t);
+    };
+    auto send_key = [&](types::player_id_t t) {
+        handler.append_to_outcoming_packet<types::player_id_t>(t);
+    };
+    auto send_player = [&](Player t) {
+        t.serialize(handler);
+    };
     serialize_map<types::player_id_t, Player>(players, send_int32, send_key, send_player);
 
     // Serialize map with players positions.
-    auto send_position = [&](Position t){ t.serialize(handler); };
+    auto send_position = [&](Position t) {
+        t.serialize(handler);
+    };
     serialize_map<types::player_id_t, Position>(player_positions, send_int32, send_key, send_position);
 
     // Serialize vector with blocks positions.
@@ -460,7 +494,9 @@ void Game::serialize(UDPHandler& handler)
     serialize_vector<Position>(blocks_vec, send_int32, send_position);
 
     // Serialize vector with bombs.
-    auto send_bomb = [&](Bomb t){ t.serialize(handler); };
+    auto send_bomb = [&](Bomb t) {
+        t.serialize(handler);
+    };
     serialize_vector<Bomb>(bombs, send_int32, send_bomb);
 
     // Serialize vector with explosions.
@@ -471,12 +507,13 @@ void Game::serialize(UDPHandler& handler)
     serialize_vector<Position>(explosions_vec, send_int32, send_position);
 
     // Serialize map with scores.
-    auto send_score = [&](types::score_t t) { 
-        handler.append_to_outcoming_packet<types::score_t>(t); };
+    auto send_score = [&](types::score_t t) {
+        handler.append_to_outcoming_packet<types::score_t>(t);
+    };
     serialize_map<types::player_id_t, types::score_t>(scores, send_int32, send_key, send_score);
 }
 
-ClientMessageManager::ClientMessageManager(TCPHandler& tcp_handler_, UDPHandler& udp_handler_) : 
+ClientMessageManager::ClientMessageManager(TCPHandler& tcp_handler_, UDPHandler& udp_handler_) :
     tcp_handler(tcp_handler_), udp_handler(udp_handler_) {}
 
 ServerMessage ClientMessageManager::read_server_message()
@@ -505,7 +542,7 @@ InputMessage ClientMessageManager::read_gui_message()
     // Read another incoming UDP packet.
     size_t packet_size = udp_handler.read_incoming_packet();
     if (packet_size == 0) {
-        // Treat empty UDP packet as an invalid message. 
+        // Treat empty UDP packet as an invalid message.
         return InvalidMessage();
     }
 
@@ -513,20 +550,20 @@ InputMessage ClientMessageManager::read_gui_message()
 
     switch (message_id)
     {
-        case 0:
-            if (packet_size == 1) return PlaceBomb();
-            break;
-        case 1:
-            if (packet_size == 1) return PlaceBlock();
-            break;
-        case 2:
-            if (packet_size == 1 + sizeof(Move)) {
-                uint8_t d_val = udp_handler.read_next_packet_element<u_int8_t>();
-                if (d_val < 4) {
-                    Direction direction = static_cast<Direction>(d_val);
-                    return Move(direction);
-                }
-            }   
+    case 0:
+        if (packet_size == 1) return PlaceBomb();
+        break;
+    case 1:
+        if (packet_size == 1) return PlaceBlock();
+        break;
+    case 2:
+        if (packet_size == 1 + sizeof(Move)) {
+            uint8_t d_val = udp_handler.read_next_packet_element<u_int8_t>();
+            if (d_val < 4) {
+                Direction direction = static_cast<Direction>(d_val);
+                return Move(direction);
+            }
+        }
     }
     return InvalidMessage();
 }

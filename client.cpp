@@ -19,7 +19,7 @@ enum State { LOBBY, GAME };
 std::atomic<State> state;
 std::atomic<bool> join_sent;
 
-void guiClientServerStream(ClientMessageManager& manager, std::string& player_name) 
+void guiClientServerStream(ClientMessageManager& manager, std::string& player_name)
 {
     try
     {
@@ -38,7 +38,9 @@ void guiClientServerStream(ClientMessageManager& manager, std::string& player_na
             }
             else {
                 // Send next instruction input to the server.
-                std::visit([&](auto&& arg){ manager.send_server_message(arg); }, message);
+                std::visit([&](auto&& arg) {
+                    manager.send_server_message(arg);
+                }, message);
             }
         }
     }
@@ -49,7 +51,7 @@ void guiClientServerStream(ClientMessageManager& manager, std::string& player_na
     }
 }
 
-void serverClientGuiStream(ClientMessageManager& manager) 
+void serverClientGuiStream(ClientMessageManager& manager)
 {
     try {
         ServerMessage message;
@@ -109,7 +111,7 @@ void serverClientGuiStream(ClientMessageManager& manager)
     }
 }
 
-int main(int argc, char* argv[]) 
+int main(int argc, char* argv[])
 {
     // Parse program arguments.
     options_client op = parse_client(argc, argv);

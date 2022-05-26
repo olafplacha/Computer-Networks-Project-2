@@ -151,75 +151,75 @@ struct Bomb {
 };
 
 struct Lobby {
-    public:
-        Lobby() = default;
-        /* Instantiate Lobby based on the first message from the server. */
-        Lobby(Hello&);
-        /* Change Lobby's state when a new player is accepted */
-        void accept(AcceptedPlayer&);
-        void serialize(UDPHandler&);
+public:
+    Lobby() = default;
+    /* Instantiate Lobby based on the first message from the server. */
+    Lobby(Hello&);
+    /* Change Lobby's state when a new player is accepted */
+    void accept(AcceptedPlayer&);
+    void serialize(UDPHandler&);
 
-    private:
-        std::string server_name;
-        types::players_count_t players_count;
-        types::size_xy_t size_x;
-        types::size_xy_t size_y;
-        types::game_length_t game_length;
-        types::explosion_radius_t explosion_radius;
-        types::bomb_timer_t bomb_timer;
-        std::map<types::player_id_t, Player> players;    
+private:
+    std::string server_name;
+    types::players_count_t players_count;
+    types::size_xy_t size_x;
+    types::size_xy_t size_y;
+    types::game_length_t game_length;
+    types::explosion_radius_t explosion_radius;
+    types::bomb_timer_t bomb_timer;
+    std::map<types::player_id_t, Player> players;
 };
 
 class Game {
-    public:
-        Game() = default;
-        /* Instantiate Game based on the messages from the server. */
-        Game(Hello&, GameStarted&);
-        /* Change Game's state based on the Turn received. */
-        void apply_turn(Turn&);
-        void serialize(UDPHandler&);
+public:
+    Game() = default;
+    /* Instantiate Game based on the messages from the server. */
+    Game(Hello&, GameStarted&);
+    /* Change Game's state based on the Turn received. */
+    void apply_turn(Turn&);
+    void serialize(UDPHandler&);
 
-    private:
-        void apply_event(BombPlaced&);
-        void apply_event(BombExploded&);
-        void apply_event(PlayerMoved&);
-        void apply_event(BlockPlaced&);
+private:
+    void apply_event(BombPlaced&);
+    void apply_event(BombExploded&);
+    void apply_event(PlayerMoved&);
+    void apply_event(BlockPlaced&);
 
-        void decrease_bomb_timers();
-        void update_scores();
-        void find_explosions(const Bomb&);
-        void explode_one_direction(const Position&, types::coord_t, types::coord_t);
-        
-        /* Serialized. */
-        std::string server_name;
-        types::size_xy_t size_x;
-        types::size_xy_t size_y;
-        types::game_length_t game_length;
-        types::turn_t turn;
-        std::map<types::player_id_t, Player> players;
-        std::map<types::player_id_t, Position> player_positions;
-        std::unordered_set<Position, Position::HashFunction> blocks;
-        std::vector<Bomb> bombs;
-        std::unordered_set<Position, Position::HashFunction> explosions;
-        std::map<types::player_id_t, types::score_t> scores;
-        /* Not serialized. */
-        types::bomb_timer_t bomber_timer;
-        types::explosion_radius_t explosion_radius;
-        std::set<types::player_id_t> turn_robots_destroyed;
-        std::unordered_set<Position, Position::HashFunction> turn_blocks_destroyed;
-        std::set<Position> turn_explosions;
+    void decrease_bomb_timers();
+    void update_scores();
+    void find_explosions(const Bomb&);
+    void explode_one_direction(const Position&, types::coord_t, types::coord_t);
+
+    /* Serialized. */
+    std::string server_name;
+    types::size_xy_t size_x;
+    types::size_xy_t size_y;
+    types::game_length_t game_length;
+    types::turn_t turn;
+    std::map<types::player_id_t, Player> players;
+    std::map<types::player_id_t, Position> player_positions;
+    std::unordered_set<Position, Position::HashFunction> blocks;
+    std::vector<Bomb> bombs;
+    std::unordered_set<Position, Position::HashFunction> explosions;
+    std::map<types::player_id_t, types::score_t> scores;
+    /* Not serialized. */
+    types::bomb_timer_t bomber_timer;
+    types::explosion_radius_t explosion_radius;
+    std::set<types::player_id_t> turn_robots_destroyed;
+    std::unordered_set<Position, Position::HashFunction> turn_blocks_destroyed;
+    std::set<Position> turn_explosions;
 };
 
 namespace serverClientCodes {
-    const types::message_id_t join = 0;
-    const types::message_id_t placeBomb = 1;
-    const types::message_id_t placeBlock = 2;
-    const types::message_id_t move = 3;
+const types::message_id_t join = 0;
+const types::message_id_t placeBomb = 1;
+const types::message_id_t placeBlock = 2;
+const types::message_id_t move = 3;
 }
 
 namespace guiClientCodes {
-    const types::message_id_t lobby = 0;
-    const types::message_id_t game = 1;
+const types::message_id_t lobby = 0;
+const types::message_id_t game = 1;
 }
 
 /* Messages sent from client to server. */
@@ -233,33 +233,33 @@ using InputMessage = std::variant<PlaceBomb, PlaceBlock, Move, InvalidMessage>;
 
 class ClientMessageManager
 {
-    public:
-        ClientMessageManager(TCPHandler&, UDPHandler&);
+public:
+    ClientMessageManager(TCPHandler&, UDPHandler&);
 
-        /**
-         * @brief Reads another message from the server.
-         * 
-         * @return ServerMessage Message from the server.
-         */
-        ServerMessage read_server_message();
-        InputMessage read_gui_message();
+    /**
+     * @brief Reads another message from the server.
+     *
+     * @return ServerMessage Message from the server.
+     */
+    ServerMessage read_server_message();
+    InputMessage read_gui_message();
 
-        void send_server_message(Join&);
-        void send_server_message(PlaceBomb&);
-        void send_server_message(PlaceBlock&);
-        void send_server_message(Move&);
-        void send_server_message(InvalidMessage&);
+    void send_server_message(Join&);
+    void send_server_message(PlaceBomb&);
+    void send_server_message(PlaceBlock&);
+    void send_server_message(Move&);
+    void send_server_message(InvalidMessage&);
 
-        void send_gui_message(Lobby&);
-        void send_gui_message(Game&);
+    void send_gui_message(Lobby&);
+    void send_gui_message(Game&);
 
-        /* Delete copy constructor and copy assignment. */
-        ClientMessageManager(ClientMessageManager const&) = delete;
-        void operator=(ClientMessageManager const&) = delete;
+    /* Delete copy constructor and copy assignment. */
+    ClientMessageManager(ClientMessageManager const&) = delete;
+    void operator=(ClientMessageManager const&) = delete;
 
-    private:
-        TCPHandler& tcp_handler;
-        UDPHandler& udp_handler;
+private:
+    TCPHandler& tcp_handler;
+    UDPHandler& udp_handler;
 };
 
 #endif // MESSAGES_H

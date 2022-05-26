@@ -190,7 +190,7 @@ class Game {
         void find_explosions(const Bomb&);
         void explode_one_direction(const Position&, types::coord_t, types::coord_t);
         
-        /* Serialized */
+        /* Serialized. */
         std::string server_name;
         types::size_xy_t size_x;
         types::size_xy_t size_y;

@@ -3,6 +3,7 @@
 
 #include <inttypes.h>
 #include <string>
+#include <vector>
 
 const int TCP_BUFF_SIZE = 65536;
 const int UDP_BUFF_SIZE = 65536;
@@ -37,8 +38,13 @@ namespace types
 
 namespace usage
 {
-    const std::string CLIENT_USAGE = "-d gui-address -n player-name -p port -s server-address\n";
-    const std::string CLIENT_HELP = "This is a placeholder for help info...\n";
+    const std::string CLIENT_USAGE = "Usage:\n-d <GUI_ADDRESS> -n <PLAYER_NAME> -p <PORT> -s <SERVER_ADDRESS>\n";
+    const std::string CLIENT_HELP = CLIENT_USAGE + "\nOptions:\n" + 
+         "\t-d\tAddress of GUI: <(host name):(port) or (IPv4):(port) or (IPv6):(port)>.\n" +
+         "\t-n\tPlayer's name.\n" +
+         "\t-p\tPort on which client listens for move instruction packets.\n" +
+         "\t-d\tAddress of server: <(host name):(port) or (IPv4):(port) or (IPv6):(port)>.\n";
+
 }
 
 namespace options

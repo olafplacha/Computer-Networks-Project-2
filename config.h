@@ -43,7 +43,8 @@ namespace usage
                                     "\t-d\tAddress of GUI: <(host name):(port) or (IPv4):(port) or (IPv6):(port)>.\n" +
                                     "\t-n\tPlayer's name.\n" +
                                     "\t-p\tPort on which client listens for move instruction packets.\n" +
-                                    "\t-d\tAddress of server: <(host name):(port) or (IPv4):(port) or (IPv6):(port)>.\n";
+                                    "\t-d\tAddress of server: <(host name):(port) or (IPv4):(port) or (IPv6):(port)>.\n" +
+                                    "\t-h\tShows usage information.\n";
 
     const std::string SERVER_USAGE = std::string("Usage:\n-b <BOMB_TIMER> -c <PLAYERS_COUNT> -d <TURN_DURATION> ") +
                                      "-e <EXPLOSION_RADIUS> -k <INITIAL_BLOCKS> -l <GAME_LENGTH> -n <SERVER_NAME> " +

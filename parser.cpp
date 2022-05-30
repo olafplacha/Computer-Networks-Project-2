@@ -39,6 +39,7 @@ static bool required_specified_client(const required_client &required)
                   !required.port &&
                   !required.server_address &&
                   !required.server_port;
+                  
     return result;
 }
 

@@ -188,20 +188,6 @@ void TCPHandler::return_when_n_bytes_in_deque(size_t n)
     }
 }
 
-void TCPHandler::read_n_bytes(size_t n, uint8_t* buff)
-{
-    return_when_n_bytes_in_deque(n);
-    // At this point there are at least n bytes in the deque.
-    for (size_t i = 0; i < n; i++)
-    {
-        // Copy n bytes from recv_deque to the buffer.
-        buff[i] = recv_deque.front();
-        recv_deque.pop_front();
-    }
-    // Convert the endianness if needed.
-    convert_network_to_host_byte_order(buff, n);
-}
-
 void TCPHandler::send_n_bytes(size_t n, uint8_t* buff)
 {
     // Send until there are no bytes to be sent.

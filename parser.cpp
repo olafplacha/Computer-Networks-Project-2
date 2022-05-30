@@ -2,6 +2,7 @@
 #include <set>
 #include <string>
 #include <limits>
+#include <chrono>
 #include "parser.h"
 #include "config.h"
 
@@ -109,7 +110,7 @@ static T parse_numerical(const char *s, std::string &&message)
     return (T)t;
 }
 
-static void parse_address(std::string &addr, types::port_t port, std::string s, std::string &&message)
+static void parse_address(std::string &addr, types::port_t& port, std::string s, std::string &&message)
 {
     auto pos = s.find_last_of(options::ADDRESS_DELIMITER);
     if (pos == std::string::npos)
@@ -176,7 +177,7 @@ options_server parse_server(int argc, char *argv[])
     required_server required;
 
     // Get default seed value.
-    options.seed = 99; // HERE REPLACE IT.
+    options.seed = (types::seed_t) std::chrono::system_clock::now().time_since_epoch().count();
 
     // Validates if any unknown parameter was specified.
     int counter = 1;

@@ -31,7 +31,7 @@ struct required_server
     bool size_y = true;
 };
 
-bool required_specified_client(const required_client &required)
+static bool required_specified_client(const required_client &required)
 {
     bool result = !required.gui_address &&
                   !required.gui_port &&
@@ -42,7 +42,7 @@ bool required_specified_client(const required_client &required)
     return result;
 }
 
-bool required_specified_server(const required_server &required)
+static bool required_specified_server(const required_server &required)
 {
     bool result = !required.bomb_timer &&
                   !required.players_count &&
@@ -65,9 +65,9 @@ static void exit_wrong_param(std::string program, const std::string &usage)
     exit(EXIT_FAILURE);
 }
 
-static void exit_help(const std::string &help_message)
+static void exit_help(std::string program, const std::string &help_message)
 {
-    std::cout << help_message;
+    std::cerr << "Usage: " << program << " " << help_message;
     exit(EXIT_SUCCESS);
 }
 
@@ -155,7 +155,7 @@ options_client parse_client(int argc, char *argv[])
             required.server_port = false;
             break;
         case options::HELP:
-            exit_help(usage::CLIENT_HELP);
+            exit_help(argv[0], usage::CLIENT_HELP);
             break;
         default:
             exit_wrong_param(argv[0], usage::CLIENT_USAGE);
@@ -233,7 +233,7 @@ options_server parse_server(int argc, char *argv[])
             required.size_y = false;
             break;
         case options::HELP:
-            exit_help(usage::SERVER_HELP);
+            exit_help(argv[0], usage::SERVER_HELP);
             break;
         default:
             exit_wrong_param(argv[0], usage::SERVER_USAGE);

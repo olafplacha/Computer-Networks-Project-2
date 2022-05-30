@@ -38,7 +38,7 @@ namespace types
 
 namespace usage
 {
-    const std::string CLIENT_USAGE = "Usage:\n-d <GUI_ADDRESS> -n <PLAYER_NAME> -p <PORT> -s <SERVER_ADDRESS>\n";
+    const std::string CLIENT_USAGE = "-d <GUI_ADDRESS> -n <PLAYER_NAME> -p <PORT> -s <SERVER_ADDRESS>\n";
     const std::string CLIENT_HELP = CLIENT_USAGE + "\nOptions:\n" +
                                     "\t-d\tAddress of GUI: <(host name):(port) or (IPv4):(port) or (IPv6):(port)>.\n" +
                                     "\t-n\tPlayer's name.\n" +
@@ -46,7 +46,7 @@ namespace usage
                                     "\t-d\tAddress of server: <(host name):(port) or (IPv4):(port) or (IPv6):(port)>.\n" +
                                     "\t-h\tShows usage information.\n";
 
-    const std::string SERVER_USAGE = std::string("Usage:\n-b <BOMB_TIMER> -c <PLAYERS_COUNT> -d <TURN_DURATION> ") +
+    const std::string SERVER_USAGE = std::string("-b <BOMB_TIMER> -c <PLAYERS_COUNT> -d <TURN_DURATION> ") +
                                      "-e <EXPLOSION_RADIUS> -k <INITIAL_BLOCKS> -l <GAME_LENGTH> -n <SERVER_NAME> " +
                                      "-p <PORT> [-s <SEED>] -x <SIZE_X> -y <SIZE_Y>\n";
     const std::string SERVER_HELP = SERVER_USAGE + "\nTo be completed...\n";

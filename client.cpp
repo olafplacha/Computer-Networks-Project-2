@@ -11,9 +11,8 @@
 #include <atomic>
 
 #include "config.h"
-#include "messages.h"
 #include "parser.h"
-#include "network_handler.h"
+#include "message_manager.h"
 
 enum State { LOBBY, GAME };
 std::atomic<State> state;

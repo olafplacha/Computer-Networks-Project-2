@@ -90,7 +90,7 @@ public:
      * @throws TCPError.
      */
     template <typename T>
-    T read_element(); // TODO - template this function!
+    T read_element();
 
     // Send element over TCP connection.
     template<typename T>

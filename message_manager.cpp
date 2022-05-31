@@ -23,6 +23,7 @@ ServerMessage ClientMessageManager::read_server_message()
 
     case clientServerCodes::gameEnded:
         return GameEnded(tcp_handler);
+
     default:
         throw std::runtime_error("Unknown message received from the server!");
     }
@@ -109,5 +110,21 @@ ClientMessage ServerMessageManager::read_client_message()
 {
     types::message_id_t message_id = tcp_handler.read_element<types::message_id_t>();
 
+    switch (message_id)
+    {
+    case serverClientCodes::join:
+        return Join(tcp_handler);
+    
+    case serverClientCodes::placeBomb:
+        return PlaceBomb();
 
+    case serverClientCodes::placeBlock:
+        return PlaceBlock();
+
+    case serverClientCodes::move:
+        return Move(tcp_handler);
+
+    default:
+        throw std::runtime_error("Unknown message received from the client!");
+    }
 }

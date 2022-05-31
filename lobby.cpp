@@ -1,6 +1,6 @@
 #include "lobby.h"
 
-LobbyClient::LobbyClient(Hello& hello)
+LobbyClient::LobbyClient(const Hello& hello)
 {
     server_name = hello.server_name;
     players_count = hello.players_count;
@@ -11,7 +11,7 @@ LobbyClient::LobbyClient(Hello& hello)
     bomb_timer = hello.bomber_timer;
 }
 
-void LobbyClient::accept(AcceptedPlayer& player)
+void LobbyClient::accept(const AcceptedPlayer& player)
 {
     players.insert({player.id, player.player});
 }

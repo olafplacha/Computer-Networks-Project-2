@@ -20,10 +20,10 @@ class LobbyClient : public Lobby
 {
 public:
     /* Instantiate Lobby based on the first message from the server. */
-    LobbyClient(Hello &);
+    LobbyClient(const Hello &);
 
     /* Change Lobby's state when a new player is accepted */
-    void accept(AcceptedPlayer &);
+    void accept(const AcceptedPlayer &);
 
     /* Get the state of the lobby. */
     LobbyMessage get_lobby_state() const;

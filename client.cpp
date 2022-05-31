@@ -12,6 +12,7 @@
 
 #include "config.h"
 #include "parser.h"
+#include "game.h"
 #include "message_manager.h"
 
 enum State { LOBBY, GAME };
@@ -63,7 +64,7 @@ void serverClientGuiStream(ClientMessageManager& manager)
 
         while (true) {
             // New game is about to be started.
-            Lobby lobby(hello);
+            LobbyMessage lobby(hello);
             manager.send_gui_message(lobby);
 
             while (state == LOBBY) {
@@ -98,7 +99,9 @@ void serverClientGuiStream(ClientMessageManager& manager)
                 else if (std::holds_alternative<Turn>(message)) {
                     Turn turn = std::get<Turn>(message);
                     game.apply_turn(turn);
-                    manager.send_gui_message(game);
+                    // Get the same state and send it to gui.
+                    GameMessage state = game.get_game_state();
+                    manager.send_gui_message(state);
                 }
             }
         }

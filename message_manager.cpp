@@ -86,7 +86,7 @@ void ClientMessageManager::send_server_message(Move& message)
 void ClientMessageManager::send_server_message(InvalidMessage&) {};
 
 // Over UDP.
-void ClientMessageManager::send_gui_message(Lobby& message)
+void ClientMessageManager::send_gui_message(LobbyMessage& message)
 {
     udp_handler.append_to_outcoming_packet<types::message_id_t>(guiClientCodes::lobby);
     message.serialize(udp_handler);
@@ -95,7 +95,7 @@ void ClientMessageManager::send_gui_message(Lobby& message)
     udp_handler.flush_outcoming_packet();
 }
 
-void ClientMessageManager::send_gui_message(Game& message)
+void ClientMessageManager::send_gui_message(GameMessage& message)
 {
     udp_handler.append_to_outcoming_packet<types::message_id_t>(guiClientCodes::game);
     message.serialize(udp_handler);

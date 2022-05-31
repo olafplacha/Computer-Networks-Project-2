@@ -389,7 +389,7 @@ void Bomb::serialize(UDPHandler& handler) const
     handler.append_to_outcoming_packet<types::bomb_timer_t>(timer);
 }
 
-Lobby::Lobby(Hello& hello)
+LobbyMessage::LobbyMessage(Hello& hello)
 {
     server_name = hello.server_name;
     players_count = hello.players_count;
@@ -400,12 +400,12 @@ Lobby::Lobby(Hello& hello)
     bomb_timer = hello.bomber_timer;
 }
 
-void Lobby::accept(AcceptedPlayer& player)
+void LobbyMessage::accept(AcceptedPlayer& player)
 {
     players.insert({player.id, player.player});
 }
 
-void Lobby::serialize(UDPHandler& handler) const
+void LobbyMessage::serialize(UDPHandler& handler) const
 {
     // Serialize server name.
     auto send_str_len = [&](types::str_len_t t) {
@@ -437,157 +437,7 @@ void Lobby::serialize(UDPHandler& handler) const
     serialize_map<types::player_id_t, Player>(players, send_map_len, send_key, send_val);
 }
 
-Game::Game(Hello& hello, GameStarted& start)
-{
-    server_name = hello.server_name;
-    size_x = hello.size_x;
-    size_y = hello.size_y;
-    game_length = hello.game_length;
-    turn = 0;
-    players = start.players;
-
-    for(const auto& [id, player] : players) {
-        // Initialize players' positions.
-        Position p;
-        player_positions.insert({id, p});
-        // Initialize players' scores.
-        scores.insert({id, 0});
-    }
-    bomber_timer = hello.bomber_timer;
-    explosion_radius = hello.explosion_radius;
-}
-
-void Game::apply_event(BombPlaced& event)
-{
-    // Add a new bomb.
-    Bomb bomb;
-    bomb.id = event.id;
-    bomb.position = event.position;
-    bomb.timer = bomber_timer;
-
-    bombs.push_back(bomb);
-}
-
-void Game::explode_one_direction(const Position& pos, types::coord_t dx, types::coord_t dy)
-{
-    types::coord_t curr_x = pos.x;
-    types::coord_t curr_y = pos.y;
-    types::explosion_radius_t curr_radius = 0;
-
-    while (curr_x >= 0 && curr_x < size_x && curr_y >= 0 && curr_y < size_y && curr_radius <= explosion_radius) {
-        // Casting is safe because of the above condition.
-        Position p;
-        p.x = (types::size_xy_t) curr_x;
-        p.y = (types::size_xy_t) curr_y;
-
-        // Add current position to explosions.
-        explosions.insert(p);
-
-        if (blocks.find(p) != blocks.end()) {
-            // Current position is blocked.
-            return;
-        }
-        curr_x += dx;
-        curr_y += dy;
-        curr_radius++;
-    }
-}
-
-void Game::find_explosions(const Bomb& bomb)
-{
-    Position pos = bomb.position;
-    explode_one_direction(pos, 0, 1);
-    explode_one_direction(pos, 1, 0);
-    explode_one_direction(pos, 0, -1);
-    explode_one_direction(pos, -1, 0);
-}
-
-void Game::apply_event(BombExploded& event)
-{
-    // Find the exploding bomb.
-    for (size_t i = 0; i < bombs.size(); i++)
-    {
-        if (event.id == bombs.at(i).id) {
-            // Find the exploded positions.
-            find_explosions(bombs.at(i));
-            // Remove the bomb.
-            bombs.erase(bombs.begin() + i);
-            break;
-        }
-    }
-
-    // Mark destroyed robots.
-    for (const types::player_id_t& id : event.robots_destroyed) {
-        turn_robots_destroyed.insert(id);
-    }
-
-    // Add removed blocks.
-    for (const Position& pos : event.blocks_destroyed) {
-        turn_blocks_destroyed.insert(pos);
-    }
-}
-
-void Game::apply_event(PlayerMoved& event)
-{
-    // Change player's position.
-    auto it = player_positions.find(event.id);
-    if (it != player_positions.end()) {
-        it->second = event.position;
-    }
-}
-
-void Game::apply_event(BlockPlaced& event)
-{
-    // Add a new block.
-    blocks.insert(event.position);
-}
-
-void Game::decrease_bomb_timers()
-{
-    for(Bomb& bomb : bombs) {
-        bomb.timer -= 1;
-    }
-}
-
-void Game::update_scores()
-{
-    for(const types::player_id_t& id : turn_robots_destroyed) {
-        auto it = scores.find(id);
-        if (it != scores.end()) {
-            it->second += 1;
-        }
-    }
-
-    // Clear the set for the next turn.
-    turn_robots_destroyed.clear();
-}
-
-void Game::apply_turn(Turn& turn_message)
-{
-    turn = turn_message.turn;
-    decrease_bomb_timers();
-
-    // Clear explosion set from the previous turn.
-    explosions.clear();
-    // Clear destroyed blocks from the previous turn.
-    turn_blocks_destroyed.clear();
-
-    for (Event& event : turn_message.events) {
-        // Apply each event to the state of the game.
-        std::visit([&](auto&& arg) {
-            apply_event(arg);
-        }, event);
-    }
-
-    // After all bombs exploded, remove destroyed blocks.
-    for (const Position& pos : turn_blocks_destroyed) {
-        blocks.erase(pos);
-    }
-
-    update_scores();
-}
-
-void Game::serialize(UDPHandler& handler) const
+void GameMessage::serialize(UDPHandler& handler) const
 {
     // Serialize server name.
     auto send_str_len = [&](types::str_len_t t) {
@@ -608,29 +458,25 @@ void Game::serialize(UDPHandler& handler) const
     auto send_map_len = [&](types::map_len_t t) {
         handler.append_to_outcoming_packet<types::map_len_t>(t);
     };
-    auto send_key = [&](const types::player_id_t& t) {
+    auto send_player_id = [&](const types::player_id_t& t) {
         handler.append_to_outcoming_packet<types::player_id_t>(t);
     };
     auto send_player = [&](Player t) {
         t.serialize(handler);
     };
-    serialize_map<types::player_id_t, Player>(players, send_map_len, send_key, send_player);
+    serialize_map<types::player_id_t, Player>(players, send_map_len, send_player_id, send_player);
 
-    // Serialize map with players positions.
+    // Serialize map with player positions.
     auto send_position = [&](const Position& t) {
         t.serialize(handler);
     };
-    serialize_map<types::player_id_t, Position>(player_positions, send_map_len, send_key, send_position);
+    serialize_map<types::player_id_t, Position>(player_positions, send_map_len, send_player_id, send_position);
 
-    // Serialize vector with blocks positions.
+    // Serialize vector with blocks.
     auto send_vec_len = [&](types::vec_len_t t) {
         handler.append_to_outcoming_packet<types::vec_len_t>(t);
     };
-    std::vector<Position> blocks_vec;
-    for (const Position& p : blocks) {
-        blocks_vec.push_back(p);
-    }
-    serialize_vector<Position>(blocks_vec, send_vec_len, send_position);
+    serialize_vector<Position>(blocks, send_vec_len, send_position);
 
     // Serialize vector with bombs.
     auto send_bomb = [&](const Bomb& t) {
@@ -639,15 +485,11 @@ void Game::serialize(UDPHandler& handler) const
     serialize_vector<Bomb>(bombs, send_vec_len, send_bomb);
 
     // Serialize vector with explosions.
-    std::vector<Position> explosions_vec;
-    for (const Position& p : explosions) {
-        explosions_vec.push_back(p);
-    }
-    serialize_vector<Position>(explosions_vec, send_vec_len, send_position);
+    serialize_vector<Position>(explosions, send_vec_len, send_position);
 
     // Serialize map with scores.
     auto send_score = [&](const types::score_t& t) {
         handler.append_to_outcoming_packet<types::score_t>(t);
     };
-    serialize_map<types::player_id_t, types::score_t>(scores, send_map_len, send_key, send_score);
+    serialize_map<types::player_id_t, types::score_t>(scores, send_map_len, send_player_id, send_score);
 }

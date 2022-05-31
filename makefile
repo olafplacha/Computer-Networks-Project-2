@@ -1,4 +1,4 @@
-SOURCE_CLIENT = client.cpp config.h messages.h messages.cpp parser.h parser.cpp network_handler.h network_handler.cpp message_manager.h message_manager.cpp
+SOURCE_CLIENT = client.cpp config.h messages.h messages.cpp parser.h parser.cpp network_handler.h network_handler.cpp message_manager.h message_manager.cpp game.h game.cpp
 SOURCE_SERVER = server.cpp config.h parser.h parser.cpp
 
 # CFLAGS = -pthread -Wall -Wextra -Wconversion -Werror -g -std=gnu++20

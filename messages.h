@@ -157,17 +157,15 @@ struct GameEnded {
 struct Bomb {
     Position position;
     types::bomb_timer_t timer;
-    /* Not serialized */
-    types::bomb_id_t id;
-
+    
     void serialize(UDPHandler&) const;
 };
 
-struct Lobby {
+struct LobbyMessage {
 public:
-    Lobby() = default;
+    LobbyMessage() = default;
     /* Instantiate Lobby based on the first message from the server. */
-    Lobby(Hello&);
+    LobbyMessage(Hello&);
     /* Change Lobby's state when a new player is accepted */
     void accept(AcceptedPlayer&);
     void serialize(UDPHandler&) const;
@@ -183,27 +181,7 @@ private:
     std::map<types::player_id_t, Player> players;
 };
 
-class Game {
-public:
-    Game() = default;
-    /* Instantiate Game based on the messages from the server. */
-    Game(Hello&, GameStarted&);
-    /* Change Game's state based on the Turn received. */
-    void apply_turn(Turn&);
-    void serialize(UDPHandler&) const;
-
-private:
-    void apply_event(BombPlaced&);
-    void apply_event(BombExploded&);
-    void apply_event(PlayerMoved&);
-    void apply_event(BlockPlaced&);
-
-    void decrease_bomb_timers();
-    void update_scores();
-    void find_explosions(const Bomb&);
-    void explode_one_direction(const Position&, types::coord_t, types::coord_t);
-
-    /* Serialized. */
+struct GameMessage {
     std::string server_name;
     types::size_xy_t size_x;
     types::size_xy_t size_y;
@@ -211,16 +189,12 @@ private:
     types::turn_t turn;
     std::map<types::player_id_t, Player> players;
     std::map<types::player_id_t, Position> player_positions;
-    std::unordered_set<Position, Position::HashFunction> blocks;
+    std::vector<Position> blocks;
     std::vector<Bomb> bombs;
-    std::unordered_set<Position, Position::HashFunction> explosions;
+    std::vector<Position> explosions;
     std::map<types::player_id_t, types::score_t> scores;
-    /* Not serialized. */
-    types::bomb_timer_t bomber_timer;
-    types::explosion_radius_t explosion_radius;
-    std::set<types::player_id_t> turn_robots_destroyed;
-    std::unordered_set<Position, Position::HashFunction> turn_blocks_destroyed;
-    std::set<Position> turn_explosions;
+
+    void serialize(UDPHandler&) const;
 };
 
 /* Codes of messages sent from client to server. */
@@ -266,7 +240,7 @@ using ClientMessage = std::variant<Join, PlaceBomb, PlaceBlock, Move>;
 /* Messages sent from server to client. */
 using ServerMessage = std::variant<Hello, AcceptedPlayer, GameStarted, Turn, GameEnded>;
 /* Messages sent from client to GUI. */
-using DrawMessage = std::variant<Lobby, Game>;
+using DrawMessage = std::variant<LobbyMessage, GameMessage>;
 /* Messages sent from GUI to client. */
 using InputMessage = std::variant<PlaceBomb, PlaceBlock, Move, InvalidMessage>;
 

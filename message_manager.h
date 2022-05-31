@@ -23,8 +23,8 @@ public:
     void send_server_message(Move &);
     void send_server_message(InvalidMessage &);
 
-    void send_gui_message(Lobby &);
-    void send_gui_message(Game &);
+    void send_gui_message(LobbyMessage &);
+    void send_gui_message(GameMessage &);
 
     /* Delete copy constructor and copy assignment. */
     ClientMessageManager(ClientMessageManager const &) = delete;

@@ -10,6 +10,8 @@ const int UDP_BUFF_SIZE = 65536;
 
 namespace types
 {
+    const int MAX_TYPE_SIZE = 8;
+
     using port_t = uint16_t;
 
     using message_id_t = uint8_t;
@@ -31,9 +33,6 @@ namespace types
     using vec_len_t = uint32_t;
 
     using coord_t = int64_t;
-
-    const int MAX_TYPE_SIZE = 8;
-    const int MAX_STR_SIZE = 255;
 }
 
 namespace usage

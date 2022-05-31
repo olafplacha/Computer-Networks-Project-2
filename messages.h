@@ -46,6 +46,7 @@ struct Hello {
 
     Hello() = default;
     Hello(TCPHandler& handler);
+    void serialize(TCPHandler&);
 };
 
 struct Player {

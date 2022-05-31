@@ -1,6 +1,7 @@
 #include <functional>
 #include <inttypes.h>
 #include <variant>
+#include <limits>
 #include "messages.h"
 #include "config.h"
 
@@ -52,17 +53,17 @@ static std::string read_string(TCPHandler& handler)
     return s;
 }
 
-void serialize_string(std::string& s, std::function<void (uint8_t)> send_int,
+static void serialize_string(std::string& s, std::function<void (types::str_len_t)> send_len,
                       std::function<void (char)> send_char)
 {
     // Truncate string if too long.
-    uint8_t n = types::MAX_STR_SIZE;
-    if (s.size() < types::MAX_STR_SIZE) {
-        n = (uint8_t) s.size();
+    types::str_len_t n = std::numeric_limits<types::str_len_t>::max();
+    if (s.size() < n) {
+        n = (types::str_len_t) s.size();
     }
 
     // Send data using provided function.
-    send_int(n);
+    send_len(n);
     for (size_t i = 0; i < n; i++)
     {
         send_char(s.at(i));
@@ -70,13 +71,18 @@ void serialize_string(std::string& s, std::function<void (uint8_t)> send_int,
 }
 
 template<typename K, typename V>
-void serialize_map(std::map<K, V>& m, std::function<void (uint32_t)> send_int,
+static void serialize_map(std::map<K, V>& m, std::function<void (types::map_len_t)> send_len,
                    std::function<void (K)> send_key, std::function<void (V)> send_val)
 {
-    // Maps of bigger size are not supported.
-    uint32_t n = (uint32_t) m.size();
+    // Check if the size of the map is supported.
+    size_t size = m.size();
+    if (size > std::numeric_limits<types::map_len_t>::max()) {
+        throw std::runtime_error("Trying to send a map of unsupported size!");
+    }
+    types::map_len_t n = (types::map_len_t) size;
 
-    send_int(n);
+    // Send data using provided functions.
+    send_len(n);
     for (auto const& [key, value] : m) {
         send_key(key);
         send_val(value);
@@ -84,13 +90,18 @@ void serialize_map(std::map<K, V>& m, std::function<void (uint32_t)> send_int,
 }
 
 template<typename T>
-void serialize_vector(std::vector<T>& v, std::function<void (uint32_t)> send_int,
+static void serialize_vector(std::vector<T>& v, std::function<void (types::vec_len_t)> send_len,
                       std::function<void (T)> send_element)
 {
-    // Vectors of bigger size are not supported.
-    uint32_t n = (uint32_t) v.size();
+    // Check if the size of the vector is supported.
+    size_t size = v.size();
+    if (size > std::numeric_limits<types::vec_len_t>::max()) {
+        throw std::runtime_error("Trying to send a vector of unsupported size!");
+    }
+    types::vec_len_t n = (types::vec_len_t) size;
 
-    send_int(n);
+    // Send data using provided functions.
+    send_len(n);
     for (auto const& element : v) {
         send_element(element);
     }
@@ -108,8 +119,8 @@ Join::Join(TCPHandler& handler)
 
 void Join::serialize(TCPHandler& handler)
 {
-    serialize_string(name, [&](uint8_t t) {
-        handler.send_element<uint8_t>(t);
+    serialize_string(name, [&](types::str_len_t t) {
+        handler.send_element<types::str_len_t>(t);
     },
     [&](char t) {
         handler.send_element<char>(t);
@@ -148,14 +159,14 @@ Player::Player(TCPHandler& handler)
 
 void Player::serialize(UDPHandler& handler)
 {
-    auto send_int = [&](uint8_t t) {
-        handler.append_to_outcoming_packet<uint8_t>(t);
+    auto send_len = [&](types::str_len_t t) {
+        handler.append_to_outcoming_packet<types::str_len_t>(t);
     };
     auto send_char = [&](char t) {
         handler.append_to_outcoming_packet<char>(t);
     };
-    serialize_string(name, send_int, send_char);
-    serialize_string(address, send_int, send_char);
+    serialize_string(name, send_len, send_char);
+    serialize_string(address, send_len, send_char);
 }
 
 AcceptedPlayer::AcceptedPlayer(TCPHandler& handler)
@@ -275,13 +286,13 @@ void Lobby::accept(AcceptedPlayer& player)
 void Lobby::serialize(UDPHandler& handler)
 {
     // Serialize server name.
-    auto send_int8 = [&](uint8_t t) {
-        handler.append_to_outcoming_packet<uint8_t>(t);
+    auto send_str_len = [&](types::str_len_t t) {
+        handler.append_to_outcoming_packet<types::str_len_t>(t);
     };
     auto send_char = [&](char t) {
         handler.append_to_outcoming_packet<char>(t);
     };
-    serialize_string(server_name, send_int8, send_char);
+    serialize_string(server_name, send_str_len, send_char);
 
     // Serialize other fields.
     handler.append_to_outcoming_packet<types::players_count_t>(players_count);
@@ -292,8 +303,8 @@ void Lobby::serialize(UDPHandler& handler)
     handler.append_to_outcoming_packet<types::bomb_timer_t>(bomb_timer);
 
     // Serialize map with players.
-    auto send_int32 = [&](uint32_t t) {
-        handler.append_to_outcoming_packet<uint32_t>(t);
+    auto send_map_len = [&](types::map_len_t t) {
+        handler.append_to_outcoming_packet<types::map_len_t>(t);
     };
     auto send_key = [&](types::player_id_t t) {
         handler.append_to_outcoming_packet<types::player_id_t>(t);
@@ -301,7 +312,7 @@ void Lobby::serialize(UDPHandler& handler)
     auto send_val = [&](Player t) {
         t.serialize(handler);
     };
-    serialize_map<types::player_id_t, Player>(players, send_int32, send_key, send_val);
+    serialize_map<types::player_id_t, Player>(players, send_map_len, send_key, send_val);
 }
 
 Game::Game(Hello& hello, GameStarted& start)
@@ -457,13 +468,13 @@ void Game::apply_turn(Turn& turn_message)
 void Game::serialize(UDPHandler& handler)
 {
     // Serialize server name.
-    auto send_int8 = [&](uint8_t t) {
-        handler.append_to_outcoming_packet<uint8_t>(t);
+    auto send_str_len = [&](types::str_len_t t) {
+        handler.append_to_outcoming_packet<types::str_len_t>(t);
     };
     auto send_char = [&](char t) {
         handler.append_to_outcoming_packet<char>(t);
     };
-    serialize_string(server_name, send_int8, send_char);
+    serialize_string(server_name, send_str_len, send_char);
 
     // Serialize other fields.
     handler.append_to_outcoming_packet<types::size_xy_t>(size_x);
@@ -472,8 +483,8 @@ void Game::serialize(UDPHandler& handler)
     handler.append_to_outcoming_packet<types::turn_t>(turn);
 
     // Serialize map with players.
-    auto send_int32 = [&](uint32_t t) {
-        handler.append_to_outcoming_packet<uint32_t>(t);
+    auto send_map_len = [&](types::map_len_t t) {
+        handler.append_to_outcoming_packet<types::map_len_t>(t);
     };
     auto send_key = [&](types::player_id_t t) {
         handler.append_to_outcoming_packet<types::player_id_t>(t);
@@ -481,37 +492,40 @@ void Game::serialize(UDPHandler& handler)
     auto send_player = [&](Player t) {
         t.serialize(handler);
     };
-    serialize_map<types::player_id_t, Player>(players, send_int32, send_key, send_player);
+    serialize_map<types::player_id_t, Player>(players, send_map_len, send_key, send_player);
 
     // Serialize map with players positions.
     auto send_position = [&](Position t) {
         t.serialize(handler);
     };
-    serialize_map<types::player_id_t, Position>(player_positions, send_int32, send_key, send_position);
+    serialize_map<types::player_id_t, Position>(player_positions, send_map_len, send_key, send_position);
 
     // Serialize vector with blocks positions.
+    auto send_vec_len = [&](types::vec_len_t t) {
+        handler.append_to_outcoming_packet<types::vec_len_t>(t);
+    };
     std::vector<Position> blocks_vec;
     for (const Position& p : blocks) {
         blocks_vec.push_back(p);
     }
-    serialize_vector<Position>(blocks_vec, send_int32, send_position);
+    serialize_vector<Position>(blocks_vec, send_vec_len, send_position);
 
     // Serialize vector with bombs.
     auto send_bomb = [&](Bomb t) {
         t.serialize(handler);
     };
-    serialize_vector<Bomb>(bombs, send_int32, send_bomb);
+    serialize_vector<Bomb>(bombs, send_vec_len, send_bomb);
 
     // Serialize vector with explosions.
     std::vector<Position> explosions_vec;
     for (const Position& p : explosions) {
         explosions_vec.push_back(p);
     }
-    serialize_vector<Position>(explosions_vec, send_int32, send_position);
+    serialize_vector<Position>(explosions_vec, send_vec_len, send_position);
 
     // Serialize map with scores.
     auto send_score = [&](types::score_t t) {
         handler.append_to_outcoming_packet<types::score_t>(t);
     };
-    serialize_map<types::player_id_t, types::score_t>(scores, send_int32, send_key, send_score);
+    serialize_map<types::player_id_t, types::score_t>(scores, send_map_len, send_key, send_score);
 }

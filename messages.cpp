@@ -151,6 +151,23 @@ Hello::Hello(TCPHandler& handler)
     bomber_timer = handler.read_element<types::bomb_timer_t>();
 }
 
+void Hello::serialize(TCPHandler& handler)
+{
+    serialize_string(server_name, [&](types::str_len_t t) {
+        handler.send_element<types::str_len_t>(t);
+    },
+    [&](char t) {
+        handler.send_element<char>(t);
+    });
+
+    handler.send_element<types::players_count_t>(players_count);
+    handler.send_element<types::size_xy_t>(size_x);
+    handler.send_element<types::size_xy_t>(size_y);
+    handler.send_element<types::game_length_t>(game_length);
+    handler.send_element<types::explosion_radius_t>(explosion_radius);
+    handler.send_element<types::bomb_timer_t>(bomber_timer);
+}
+
 Player::Player(TCPHandler& handler)
 {
     name = read_string(handler);

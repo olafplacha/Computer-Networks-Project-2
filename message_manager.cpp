@@ -132,5 +132,5 @@ ClientMessage ServerMessageManager::read_client_message()
 void ServerMessageManager::send_client_message(Hello &message)
 {
     tcp_handler.send_element<types::message_id_t>(clientServerCodes::hello);
-     // send hello.
+    message.serialize(tcp_handler);
 }

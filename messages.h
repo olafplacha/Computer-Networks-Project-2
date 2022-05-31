@@ -17,7 +17,7 @@ struct Join {
     Join() = default;
     Join(std::string&);
     Join(TCPHandler&);
-    void serialize(TCPHandler&);
+    void serialize(TCPHandler&) const;
 };
 
 struct PlaceBomb  {};
@@ -30,7 +30,7 @@ struct Move {
     Move() = default;
     Move(Direction direction_);
     Move(TCPHandler&);
-    void serialize(TCPHandler&);
+    void serialize(TCPHandler&) const;
 };
 
 struct InvalidMessage {};
@@ -46,7 +46,7 @@ struct Hello {
 
     Hello() = default;
     Hello(TCPHandler& handler);
-    void serialize(TCPHandler&);
+    void serialize(TCPHandler&) const;
 };
 
 struct Player {
@@ -55,8 +55,8 @@ struct Player {
 
     Player() = default;
     Player(TCPHandler&);
-    void serialize(UDPHandler&);
-    void serialize(TCPHandler&);
+    void serialize(UDPHandler&) const;
+    void serialize(TCPHandler&) const;
 };
 
 struct AcceptedPlayer {
@@ -65,7 +65,7 @@ struct AcceptedPlayer {
 
     AcceptedPlayer() = default;
     AcceptedPlayer(TCPHandler&);
-    void serialize(TCPHandler&);
+    void serialize(TCPHandler&) const;
 };
 
 struct GameStarted {
@@ -73,7 +73,7 @@ struct GameStarted {
 
     GameStarted() = default;
     GameStarted(TCPHandler&);
-    void serialize(TCPHandler&);
+    void serialize(TCPHandler&) const;
 };
 
 struct Position {
@@ -85,7 +85,7 @@ struct Position {
 
     bool operator==(const Position&) const;
 
-    void serialize(UDPHandler&);
+    void serialize(UDPHandler&) const;
 
     struct HashFunction
     {
@@ -153,7 +153,7 @@ struct Bomb {
     /* Not serialized */
     types::bomb_id_t id;
 
-    void serialize(UDPHandler&);
+    void serialize(UDPHandler&) const;
 };
 
 struct Lobby {
@@ -163,7 +163,7 @@ public:
     Lobby(Hello&);
     /* Change Lobby's state when a new player is accepted */
     void accept(AcceptedPlayer&);
-    void serialize(UDPHandler&);
+    void serialize(UDPHandler&) const;
 
 private:
     std::string server_name;
@@ -183,7 +183,7 @@ public:
     Game(Hello&, GameStarted&);
     /* Change Game's state based on the Turn received. */
     void apply_turn(Turn&);
-    void serialize(UDPHandler&);
+    void serialize(UDPHandler&) const;
 
 private:
     void apply_event(BombPlaced&);

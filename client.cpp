@@ -87,7 +87,7 @@ void serverClientGuiStream(ClientMessageManager& manager)
 
             // Create a new game.
             GameStarted game_started = std::get<GameStarted>(message);
-            Game game(hello, game_started);
+            GameClient game(hello, game_started);
 
             while (state == GAME) {
                 message = manager.read_server_message();

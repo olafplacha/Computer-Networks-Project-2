@@ -1,37 +1,5 @@
 #include "game.h"
 
-Game::Game(const Hello& hello, const GameStarted& start)
-{
-    // Game settings.
-    server_name = hello.server_name;
-    size_x = hello.size_x;
-    size_y = hello.size_y;
-    game_length = hello.game_length;
-    bomber_timer = hello.bomber_timer;
-    explosion_radius = hello.explosion_radius;
-
-    // Competitors.
-    players = start.players;
-
-    for(const auto& [id, player] : players) {
-        // Initialize players' positions.
-        Position p;
-        player_positions.insert({id, p});
-        // Initialize players' scores.
-        scores.insert({id, 0});
-    }
-}
-
-void Game::apply_event(const BombPlaced& event)
-{
-    // Add a new bomb.
-    Bomb bomb;
-    bomb.position = event.position;
-    bomb.timer = bomber_timer;
-
-    bombs.insert({event.id, bomb});
-}
-
 void Game::explode_one_direction(const Position& pos, types::coord_t dx, types::coord_t dy)
 {
     types::coord_t curr_x = pos.x;
@@ -66,7 +34,46 @@ void Game::find_explosions(const Bomb& bomb)
     explode_one_direction(pos, -1, 0);
 }
 
-void Game::apply_event(const BombExploded& event)
+void Game::decrease_bomb_timers()
+{
+    for(auto &[id, bomb] : bombs) {
+        bomb.timer -= 1;
+    }
+}
+
+GameClient::GameClient(const Hello& hello, const GameStarted& start)
+{
+    // Game settings.
+    server_name = hello.server_name;
+    size_x = hello.size_x;
+    size_y = hello.size_y;
+    game_length = hello.game_length;
+    bomber_timer = hello.bomber_timer;
+    explosion_radius = hello.explosion_radius;
+
+    // Competitors.
+    players = start.players;
+
+    for(const auto& [id, player] : players) {
+        // Initialize players' positions.
+        Position p;
+        player_positions.insert({id, p});
+        // Initialize players' scores.
+        scores.insert({id, 0});
+    }
+}
+
+void GameClient::apply_event(const BombPlaced& event)
+{
+    // Add a new bomb.
+    Bomb bomb;
+    bomb.position = event.position;
+    bomb.timer = bomber_timer;
+
+    bombs.insert({event.id, bomb});
+}
+
+void GameClient::apply_event(const BombExploded& event)
 {
     // Find the exploding bomb, mark exploded positions and erase the bomb.
     auto it = bombs.find(event.id);
@@ -86,7 +93,7 @@ void Game::apply_event(const BombExploded& event)
     }
 }
 
-void Game::apply_event(const PlayerMoved& event)
+void GameClient::apply_event(const PlayerMoved& event)
 {
     // Change player's position.
     auto it = player_positions.find(event.id);
@@ -95,20 +102,13 @@ void Game::apply_event(const PlayerMoved& event)
     }
 }
 
-void Game::apply_event(const BlockPlaced& event)
+void GameClient::apply_event(const BlockPlaced& event)
 {
     // Add a new block.
     blocks.insert(event.position);
 }
 
-void Game::decrease_bomb_timers()
-{
-    for(auto &[id, bomb] : bombs) {
-        bomb.timer -= 1;
-    }
-}
-
-void Game::update_scores()
+void GameClient::update_scores()
 {
     for(const types::player_id_t& id : turn_robots_destroyed) {
         auto it = scores.find(id);
@@ -118,7 +118,7 @@ void Game::update_scores()
     }
 }
 
-void Game::apply_turn(const Turn& turn_message)
+void GameClient::apply_turn(const Turn& turn_message)
 {
     turn = turn_message.turn;
     decrease_bomb_timers();
@@ -143,7 +143,7 @@ void Game::apply_turn(const Turn& turn_message)
     update_scores();
 }
 
-GameMessage Game::get_game_state() const
+GameMessage GameClient::get_game_state() const
 {
     GameMessage message;
     message.server_name = server_name;

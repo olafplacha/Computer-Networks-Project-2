@@ -48,7 +48,7 @@ GameClient::GameClient(const Hello& hello, const GameStarted& start)
     size_x = hello.size_x;
     size_y = hello.size_y;
     game_length = hello.game_length;
-    bomber_timer = hello.bomber_timer;
+    bomb_timer = hello.bomber_timer;
     explosion_radius = hello.explosion_radius;
 
     // Competitors.
@@ -68,7 +68,7 @@ void GameClient::apply_event(const BombPlaced& event)
     // Add a new bomb.
     Bomb bomb;
     bomb.position = event.position;
-    bomb.timer = bomber_timer;
+    bomb.timer = bomb_timer;
 
     bombs.insert({event.id, bomb});
 }
@@ -174,4 +174,18 @@ GameMessage GameClient::get_game_state() const
     message.scores = scores;
 
     return message;
+}
+
+GameServer::GameServer(const options_server& op)
+{
+    server_name = op.server_name;
+    size_x = op.size_x;
+    size_y = op.size_y;
+    game_length = op.game_length;
+    bomb_timer = op.bomb_timer;
+    explosion_radius = op.explosion_radius;
+    turn_duration = op.turn_duration;
+    seed = op.seed;
+
+    // Init blocks and players.
 }

@@ -11,12 +11,7 @@
 
 class Game
 {
-// public:
-//     /* Constructor used by the server. */
-//     Game(const options_server&);
-
 protected:
-    
     void decrease_bomb_timers();
     void find_explosions(const Bomb&);
     void explode_one_direction(const Position&, types::coord_t, types::coord_t);
@@ -26,7 +21,7 @@ protected:
     types::size_xy_t size_x;
     types::size_xy_t size_y;
     types::game_length_t game_length;
-    types::bomb_timer_t bomber_timer;
+    types::bomb_timer_t bomb_timer;
     types::explosion_radius_t explosion_radius;
 
     /* Competitors. */
@@ -66,6 +61,17 @@ private:
 
     /* Score of each player. */
     std::map<types::player_id_t, types::score_t> scores;
+};
+
+class GameServer : public Game
+{
+public:
+    /*  Create the game based on the provided options. */
+    GameServer(const options_server&);
+
+private:
+    types::seed_t seed;
+    types::turn_duration_t turn_duration;
 };
 
 #endif // GAME_H

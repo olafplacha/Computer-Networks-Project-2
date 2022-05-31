@@ -16,6 +16,7 @@ struct Join {
 
     Join() = default;
     Join(std::string&);
+    Join(TCPHandler&);
     void serialize(TCPHandler&);
 };
 
@@ -28,6 +29,7 @@ struct Move {
 
     Move() = default;
     Move(Direction direction_);
+    Move(TCPHandler&);
     void serialize(TCPHandler&);
 };
 
@@ -210,6 +212,7 @@ private:
     std::set<Position> turn_explosions;
 };
 
+/* Codes of messages sent from client to server. */
 namespace serverClientCodes {
 const types::message_id_t join = 0;
 const types::message_id_t placeBomb = 1;
@@ -217,9 +220,26 @@ const types::message_id_t placeBlock = 2;
 const types::message_id_t move = 3;
 }
 
+/* Codes of messages sent from client to gui. */
 namespace guiClientCodes {
 const types::message_id_t lobby = 0;
 const types::message_id_t game = 1;
+}
+
+/* Codes of messages sent from gui to client. */
+namespace clientGuiCodes {
+const types::message_id_t placeBomb = 0;
+const types::message_id_t placeBlock = 1;
+const types::message_id_t move = 2;
+}
+
+/* Codes of messages sent from server to client. */
+namespace clientServerCodes {
+const types::message_id_t hello = 0;
+const types::message_id_t acceptedPlayer = 1;
+const types::message_id_t gameStarted = 2;
+const types::message_id_t turn = 3;
+const types::message_id_t gameEnded = 4;
 }
 
 /* Messages sent from client to server. */

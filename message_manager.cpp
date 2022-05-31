@@ -9,15 +9,19 @@ ServerMessage ClientMessageManager::read_server_message()
 
     switch (message_id)
     {
-    case 0:
+    case clientServerCodes::hello:
         return Hello(tcp_handler);
-    case 1:
+
+    case clientServerCodes::acceptedPlayer:
         return AcceptedPlayer(tcp_handler);
-    case 2:
+
+    case clientServerCodes::gameStarted:
         return GameStarted(tcp_handler);
-    case 3:
+
+    case clientServerCodes::turn:
         return Turn(tcp_handler);
-    case 4:
+
+    case clientServerCodes::gameEnded:
         return GameEnded(tcp_handler);
     default:
         throw std::runtime_error("Unknown message received from the server!");
@@ -37,13 +41,13 @@ InputMessage ClientMessageManager::read_gui_message()
 
     switch (message_id)
     {
-    case 0:
+    case clientGuiCodes::placeBomb:
         if (packet_size == 1) return PlaceBomb();
         break;
-    case 1:
+    case clientGuiCodes::placeBlock:
         if (packet_size == 1) return PlaceBlock();
         break;
-    case 2:
+    case clientGuiCodes::move:
         if (packet_size == 1 + sizeof(Move)) {
             uint8_t d_val = udp_handler.read_next_packet_element<u_int8_t>();
             if (d_val < 4) {
@@ -97,4 +101,13 @@ void ClientMessageManager::send_gui_message(Game& message)
 
     // Send the packet.
     udp_handler.flush_outcoming_packet();
+}
+
+ServerMessageManager::ServerMessageManager(TCPHandler &tcp_handler_) : tcp_handler(tcp_handler_) {}
+
+ClientMessage ServerMessageManager::read_client_message()
+{
+    types::message_id_t message_id = tcp_handler.read_element<types::message_id_t>();
+
+
 }

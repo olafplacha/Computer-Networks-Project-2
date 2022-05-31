@@ -101,6 +101,11 @@ Join::Join(std::string& name_)
     name = name_;
 }
 
+Join::Join(TCPHandler& handler)
+{
+    name = read_string(handler);
+}
+
 void Join::serialize(TCPHandler& handler)
 {
     serialize_string(name, [&](uint8_t t) {
@@ -112,6 +117,12 @@ void Join::serialize(TCPHandler& handler)
 }
 
 Move::Move(Direction direction_) : direction(direction_) {}
+
+Move::Move(TCPHandler& handler)
+{
+    uint8_t direction_ = handler.read_element<uint8_t>();
+    direction = static_cast<Direction>(direction_);
+}
 
 void Move::serialize(TCPHandler& handler)
 {

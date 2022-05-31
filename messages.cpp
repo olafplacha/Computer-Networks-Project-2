@@ -249,10 +249,23 @@ void Position::serialize(UDPHandler& handler) const
     handler.append_to_outcoming_packet<types::size_xy_t>(y);
 }
 
+void Position::serialize(TCPHandler& handler) const
+{
+    handler.send_element<types::size_xy_t>(x);
+    handler.send_element<types::size_xy_t>(y);
+}
+
 BombPlaced::BombPlaced(TCPHandler& handler)
 {
     id = handler.read_element<types::bomb_id_t>();
     position = Position(handler);
+}
+
+void BombPlaced::serialize(TCPHandler& handler) const
+{
+    handler.send_element<types::message_id_t>(eventCodes::bombPlaced);
+    handler.send_element<types::bomb_id_t>(id);
+    position.serialize(handler);
 }
 
 BombExploded::BombExploded(TCPHandler& handler)
@@ -265,15 +278,47 @@ BombExploded::BombExploded(TCPHandler& handler)
     });
 }
 
+void BombExploded::serialize(TCPHandler& handler) const
+{
+    handler.send_element<types::message_id_t>(eventCodes::bombExploded);
+    handler.send_element<types::bomb_id_t>(id);
+
+    auto send_len = [&](types::vec_len_t t) {
+        handler.send_element<types::vec_len_t>(t);
+    };
+    auto send_player_id = [&](const types::player_id_t& t) {
+        handler.send_element<types::player_id_t>(t);
+    };
+    serialize_vector<types::message_id_t>(robots_destroyed, send_len, send_player_id);
+
+    auto send_position = [&](const Position& t) {
+        t.serialize(handler);
+    };
+    serialize_vector<Position>(blocks_destroyed, send_len, send_position);
+}
+
 PlayerMoved::PlayerMoved(TCPHandler& handler)
 {
     id = handler.read_element<types::player_id_t>();
     position = Position(handler);
 }
 
+void PlayerMoved::serialize(TCPHandler& handler) const
+{
+    handler.send_element<types::message_id_t>(eventCodes::playerMoved);
+    handler.send_element<types::player_id_t>(id);
+    position.serialize(handler);
+}
+
 BlockPlaced::BlockPlaced(TCPHandler& handler)
 {
     position = Position(handler);
+}
+
+void BlockPlaced::serialize(TCPHandler& handler) const
+{
+    handler.send_element<types::message_id_t>(eventCodes::blockPlaced);
+    position.serialize(handler);
 }
 
 using Event = std::variant<BombPlaced, BombExploded, PlayerMoved, BlockPlaced>;
@@ -301,6 +346,20 @@ Turn::Turn(TCPHandler& handler)
 {
     turn = handler.read_element<types::turn_t>();
     events = read_vector<Event>(handler, [&](){ return read_event(handler); });
+}
+
+void Turn::serialize(TCPHandler& handler) const
+{
+    handler.send_element<types::turn_t>(turn);
+    auto send_len = [&](types::vec_len_t t) {
+        handler.send_element<types::vec_len_t>(t);
+    };
+    auto send_event = [&](const Event& t) {
+        std::visit([&](auto&& arg) {
+            arg.serialize(handler);
+        }, t);
+    };
+    serialize_vector<Event>(events, send_len, send_event);
 }
 
 GameEnded::GameEnded(TCPHandler& handler)

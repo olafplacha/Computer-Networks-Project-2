@@ -86,6 +86,7 @@ struct Position {
     bool operator==(const Position&) const;
 
     void serialize(UDPHandler&) const;
+    void serialize(TCPHandler&) const;
 
     struct HashFunction
     {
@@ -104,6 +105,7 @@ struct BombPlaced {
 
     BombPlaced() = default;
     BombPlaced(TCPHandler& handler);
+    void serialize(TCPHandler&) const;
 };
 
 struct BombExploded {
@@ -113,6 +115,7 @@ struct BombExploded {
 
     BombExploded() = default;
     BombExploded(TCPHandler& handler);
+    void serialize(TCPHandler&) const;
 };
 
 struct PlayerMoved {
@@ -121,6 +124,7 @@ struct PlayerMoved {
 
     PlayerMoved() = default;
     PlayerMoved(TCPHandler& handler);
+    void serialize(TCPHandler&) const;
 };
 
 struct BlockPlaced {
@@ -128,6 +132,7 @@ struct BlockPlaced {
 
     BlockPlaced() = default;
     BlockPlaced(TCPHandler& handler);
+    void serialize(TCPHandler&) const;
 };
 
 using Event = std::variant<BombPlaced, BombExploded, PlayerMoved, BlockPlaced>;
@@ -138,6 +143,7 @@ struct Turn {
 
     Turn() = default;
     Turn(TCPHandler& handler);
+    void serialize(TCPHandler&) const;
 };
 
 struct GameEnded {
@@ -244,6 +250,14 @@ const types::message_id_t acceptedPlayer = 1;
 const types::message_id_t gameStarted = 2;
 const types::message_id_t turn = 3;
 const types::message_id_t gameEnded = 4;
+}
+
+/* Codes of specific events. */
+namespace eventCodes {
+const types::message_id_t bombPlaced = 0;
+const types::message_id_t bombExploded = 1;
+const types::message_id_t playerMoved = 2;
+const types::message_id_t blockPlaced = 3;
 }
 
 /* Messages sent from client to server. */

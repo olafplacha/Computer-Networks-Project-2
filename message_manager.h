@@ -17,14 +17,14 @@ public:
     ServerMessage read_server_message();
     InputMessage read_gui_message();
 
-    void send_server_message(Join &);
-    void send_server_message(PlaceBomb &);
-    void send_server_message(PlaceBlock &);
-    void send_server_message(Move &);
-    void send_server_message(InvalidMessage &);
+    void send_server_message(const Join &);
+    void send_server_message(const PlaceBomb &);
+    void send_server_message(const PlaceBlock &);
+    void send_server_message(const Move &);
+    void send_server_message(const InvalidMessage &);
 
-    void send_gui_message(LobbyMessage &);
-    void send_gui_message(GameMessage &);
+    void send_gui_message(LobbyMessage &&);
+    void send_gui_message(GameMessage &&);
 
     /* Delete copy constructor and copy assignment. */
     ClientMessageManager(ClientMessageManager const &) = delete;
@@ -42,11 +42,11 @@ public:
 
     ClientMessage read_client_message();
 
-    void send_client_message(Hello &);
-    void send_client_message(AcceptedPlayer &);
-    void send_client_message(GameStarted &);
-    void send_client_message(Turn &);
-    void send_client_message(GameEnded &);
+    void send_client_message(const Hello &);
+    void send_client_message(const AcceptedPlayer &);
+    void send_client_message(const GameStarted &);
+    void send_client_message(const Turn &);
+    void send_client_message(const GameEnded &);
 
     /* Delete copy constructor and copy assignment. */
     ServerMessageManager(ServerMessageManager const &) = delete;

@@ -161,16 +161,7 @@ struct Bomb {
     void serialize(UDPHandler&) const;
 };
 
-struct LobbyMessage {
-public:
-    LobbyMessage() = default;
-    /* Instantiate Lobby based on the first message from the server. */
-    LobbyMessage(Hello&);
-    /* Change Lobby's state when a new player is accepted */
-    void accept(AcceptedPlayer&);
-    void serialize(UDPHandler&) const;
-
-private:
+struct LobbyMessage {    
     std::string server_name;
     types::players_count_t players_count;
     types::size_xy_t size_x;
@@ -179,6 +170,8 @@ private:
     types::explosion_radius_t explosion_radius;
     types::bomb_timer_t bomb_timer;
     std::map<types::player_id_t, Player> players;
+
+    void serialize(UDPHandler&) const;
 };
 
 struct GameMessage {

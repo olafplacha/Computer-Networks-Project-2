@@ -187,5 +187,5 @@ GameServer::GameServer(const options_server& op)
     turn_duration = op.turn_duration;
     seed = op.seed;
 
-    // Init blocks and players.
+    // Init blocks and players...
 }

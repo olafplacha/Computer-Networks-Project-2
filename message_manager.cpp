@@ -60,33 +60,33 @@ InputMessage ClientMessageManager::read_gui_message()
     return InvalidMessage();
 }
 
-void ClientMessageManager::send_server_message(Join& message)
+void ClientMessageManager::send_server_message(const Join& message)
 {
     tcp_handler.send_element<types::message_id_t>(serverClientCodes::join);
     message.serialize(tcp_handler);
 }
 
-void ClientMessageManager::send_server_message(PlaceBomb&)
+void ClientMessageManager::send_server_message(const PlaceBomb&)
 {
     tcp_handler.send_element<types::message_id_t>(serverClientCodes::placeBomb);
 }
 
-void ClientMessageManager::send_server_message(PlaceBlock&)
+void ClientMessageManager::send_server_message(const PlaceBlock&)
 {
     tcp_handler.send_element<types::message_id_t>(serverClientCodes::placeBlock);
 }
 
-void ClientMessageManager::send_server_message(Move& message)
+void ClientMessageManager::send_server_message(const Move& message)
 {
     tcp_handler.send_element<types::message_id_t>(serverClientCodes::move);
     message.serialize(tcp_handler);
 }
 
 // Ignore.
-void ClientMessageManager::send_server_message(InvalidMessage&) {};
+void ClientMessageManager::send_server_message(const InvalidMessage&) {};
 
 // Over UDP.
-void ClientMessageManager::send_gui_message(LobbyMessage& message)
+void ClientMessageManager::send_gui_message(LobbyMessage&& message)
 {
     udp_handler.append_to_outcoming_packet<types::message_id_t>(guiClientCodes::lobby);
     message.serialize(udp_handler);
@@ -95,7 +95,7 @@ void ClientMessageManager::send_gui_message(LobbyMessage& message)
     udp_handler.flush_outcoming_packet();
 }
 
-void ClientMessageManager::send_gui_message(GameMessage& message)
+void ClientMessageManager::send_gui_message(GameMessage&& message)
 {
     udp_handler.append_to_outcoming_packet<types::message_id_t>(guiClientCodes::game);
     message.serialize(udp_handler);
@@ -129,31 +129,31 @@ ClientMessage ServerMessageManager::read_client_message()
     }
 }
 
-void ServerMessageManager::send_client_message(Hello &message)
+void ServerMessageManager::send_client_message(const Hello &message)
 {
     tcp_handler.send_element<types::message_id_t>(clientServerCodes::hello);
     message.serialize(tcp_handler);
 }
 
-void ServerMessageManager::send_client_message(AcceptedPlayer &message)
+void ServerMessageManager::send_client_message(const AcceptedPlayer &message)
 {
     tcp_handler.send_element<types::message_id_t>(clientServerCodes::acceptedPlayer);
     message.serialize(tcp_handler);
 }
 
-void ServerMessageManager::send_client_message(GameStarted &message)
+void ServerMessageManager::send_client_message(const GameStarted &message)
 {
     tcp_handler.send_element<types::message_id_t>(clientServerCodes::gameStarted);
     message.serialize(tcp_handler);
 }
 
-void ServerMessageManager::send_client_message(Turn &message)
+void ServerMessageManager::send_client_message(const Turn &message)
 {
     tcp_handler.send_element<types::message_id_t>(clientServerCodes::turn);
     message.serialize(tcp_handler);
 }
 
-void ServerMessageManager::send_client_message(GameEnded &message)
+void ServerMessageManager::send_client_message(const GameEnded &message)
 {
     tcp_handler.send_element<types::message_id_t>(clientServerCodes::gameEnded);
     message.serialize(tcp_handler);

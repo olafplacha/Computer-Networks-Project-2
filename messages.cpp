@@ -389,22 +389,6 @@ void Bomb::serialize(UDPHandler& handler) const
     handler.append_to_outcoming_packet<types::bomb_timer_t>(timer);
 }
 
-LobbyMessage::LobbyMessage(Hello& hello)
-{
-    server_name = hello.server_name;
-    players_count = hello.players_count;
-    size_x = hello.size_x;
-    size_y = hello.size_y;
-    game_length = hello.game_length;
-    explosion_radius = hello.explosion_radius;
-    bomb_timer = hello.bomber_timer;
-}
-
-void LobbyMessage::accept(AcceptedPlayer& player)
-{
-    players.insert({player.id, player.player});
-}
-
 void LobbyMessage::serialize(UDPHandler& handler) const
 {
     // Serialize server name.

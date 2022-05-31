@@ -12,6 +12,7 @@
 
 #include "config.h"
 #include "parser.h"
+#include "lobby.h"
 #include "game.h"
 #include "message_manager.h"
 
@@ -64,8 +65,8 @@ void serverClientGuiStream(ClientMessageManager& manager)
 
         while (true) {
             // New game is about to be started.
-            LobbyMessage lobby(hello);
-            manager.send_gui_message(lobby);
+            LobbyClient lobby(hello);
+            manager.send_gui_message(lobby.get_lobby_state());
 
             while (state == LOBBY) {
                 message = manager.read_server_message();
@@ -78,7 +79,7 @@ void serverClientGuiStream(ClientMessageManager& manager)
                     AcceptedPlayer player = std::get<AcceptedPlayer>(message);
                     lobby.accept(player);
                     // Send it tu gui.
-                    manager.send_gui_message(lobby);
+                    manager.send_gui_message(lobby.get_lobby_state());
                 }
                 else {
                     std::runtime_error("Forbidden message received while in the lobby!");
@@ -100,8 +101,7 @@ void serverClientGuiStream(ClientMessageManager& manager)
                     Turn turn = std::get<Turn>(message);
                     game.apply_turn(turn);
                     // Get the same state and send it to gui.
-                    GameMessage state = game.get_game_state();
-                    manager.send_gui_message(state);
+                    manager.send_gui_message(game.get_game_state());
                 }
             }
         }

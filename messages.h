@@ -151,6 +151,7 @@ struct GameEnded {
 
     GameEnded() = default;
     GameEnded(TCPHandler& handler);
+    void serialize(TCPHandler&) const;
 };
 
 struct Bomb {

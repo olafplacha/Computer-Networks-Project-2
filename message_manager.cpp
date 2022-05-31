@@ -152,3 +152,9 @@ void ServerMessageManager::send_client_message(Turn &message)
     tcp_handler.send_element<types::message_id_t>(clientServerCodes::turn);
     message.serialize(tcp_handler);
 }
+
+void ServerMessageManager::send_client_message(GameEnded &message)
+{
+    tcp_handler.send_element<types::message_id_t>(clientServerCodes::gameEnded);
+    message.serialize(tcp_handler);
+}

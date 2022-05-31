@@ -369,6 +369,20 @@ GameEnded::GameEnded(TCPHandler& handler)
              [&](){ return handler.read_element<types::score_t>(); });
 }
 
+void GameEnded::serialize(TCPHandler& handler) const
+{
+    auto send_len = [&](types::map_len_t t) {
+        handler.send_element<types::map_len_t>(t);
+    };
+    auto send_player_id = [&](const types::player_id_t& t) {
+        handler.send_element<types::player_id_t>(t);
+    };
+    auto send_score = [&](const types::score_t& t) {
+        handler.send_element<types::score_t>(t);
+    };
+    serialize_map<types::player_id_t, types::score_t>(scores, send_len, send_player_id, send_score);
+}
+
 void Bomb::serialize(UDPHandler& handler) const
 {
     position.serialize(handler);

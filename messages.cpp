@@ -186,10 +186,28 @@ void Player::serialize(UDPHandler& handler)
     serialize_string(address, send_len, send_char);
 }
 
+void Player::serialize(TCPHandler& handler)
+{
+    auto send_len = [&](types::str_len_t t) {
+        handler.send_element<types::str_len_t>(t);
+    };
+    auto send_char = [&](char t) {
+        handler.send_element<char>(t);
+    };
+    serialize_string(name, send_len, send_char);
+    serialize_string(address, send_len, send_char);
+}
+
 AcceptedPlayer::AcceptedPlayer(TCPHandler& handler)
 {
     id = handler.read_element<types::player_id_t>();
     player = Player(handler);
+}
+
+void AcceptedPlayer::serialize(TCPHandler& handler)
+{
+    handler.send_element<types::player_id_t>(id);
+    player.serialize(handler);
 }
 
 GameStarted::GameStarted(TCPHandler& handler)

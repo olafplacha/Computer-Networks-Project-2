@@ -54,8 +54,9 @@ struct Player {
     std::string address;
 
     Player() = default;
-    Player(TCPHandler& handler);
-    void serialize(UDPHandler& handler);
+    Player(TCPHandler&);
+    void serialize(UDPHandler&);
+    void serialize(TCPHandler&);
 };
 
 struct AcceptedPlayer {
@@ -64,6 +65,7 @@ struct AcceptedPlayer {
 
     AcceptedPlayer() = default;
     AcceptedPlayer(TCPHandler&);
+    void serialize(TCPHandler&);
 };
 
 struct GameStarted {

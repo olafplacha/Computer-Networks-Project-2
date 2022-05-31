@@ -48,13 +48,12 @@ private:
     std::map<types::player_id_t, Position> player_positions;
     std::unordered_set<Position, Position::HashFunction> blocks;
     std::unordered_map<types::bomb_id_t,Bomb> bombs;
-    std::unordered_set<Position, Position::HashFunction> explosions;
     std::map<types::player_id_t, types::score_t> scores;
     
     /* Auxiliary data structures, cleared after each turn. */
     std::set<types::player_id_t> turn_robots_destroyed;
     std::unordered_set<Position, Position::HashFunction> turn_blocks_destroyed;
-    std::set<Position> turn_explosions;
+    std::unordered_set<Position, Position::HashFunction> explosions;
 };
 
 #endif // GAME_H

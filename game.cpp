@@ -116,9 +116,6 @@ void Game::update_scores()
             it->second += 1;
         }
     }
-
-    // Clear the set for the next turn.
-    turn_robots_destroyed.clear();
 }
 
 void Game::apply_turn(const Turn& turn_message)
@@ -126,10 +123,10 @@ void Game::apply_turn(const Turn& turn_message)
     turn = turn_message.turn;
     decrease_bomb_timers();
 
-    // Clear explosion set from the previous turn.
+    // Clear turn specific data structures.
     explosions.clear();
-    // Clear destroyed blocks from the previous turn.
     turn_blocks_destroyed.clear();
+    turn_robots_destroyed.clear();
 
     for (const Event& event : turn_message.events) {
         // Apply each event to the state of the game.

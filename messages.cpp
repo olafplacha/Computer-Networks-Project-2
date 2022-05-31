@@ -218,6 +218,20 @@ GameStarted::GameStarted(TCPHandler& handler)
     });
 }
 
+void GameStarted::serialize(TCPHandler& handler)
+{
+    auto send_len = [&](types::map_len_t t) {
+        handler.send_element<types::map_len_t>(t);
+    };
+    auto send_key = [&](types::player_id_t t) {
+        handler.send_element<types::player_id_t>(t);
+    };
+    auto send_val = [&](Player t) {
+        t.serialize(handler);
+    };
+    serialize_map<types::player_id_t, Player>(players, send_len, send_key, send_val);
+}
+
 Position::Position(TCPHandler& handler)
 {
     x = handler.read_element<types::size_xy_t>();

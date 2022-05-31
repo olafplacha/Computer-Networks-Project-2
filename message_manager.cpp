@@ -140,3 +140,9 @@ void ServerMessageManager::send_client_message(AcceptedPlayer &message)
     tcp_handler.send_element<types::message_id_t>(clientServerCodes::acceptedPlayer);
     message.serialize(tcp_handler);
 }
+
+void ServerMessageManager::send_client_message(GameStarted &message)
+{
+    tcp_handler.send_element<types::message_id_t>(clientServerCodes::gameStarted);
+    message.serialize(tcp_handler);
+}

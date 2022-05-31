@@ -73,6 +73,7 @@ struct GameStarted {
 
     GameStarted() = default;
     GameStarted(TCPHandler&);
+    void serialize(TCPHandler&);
 };
 
 struct Position {

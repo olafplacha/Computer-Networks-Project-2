@@ -17,15 +17,14 @@ public:
     AcceptedPlayerContainer(types::players_count_t);
 
     /* Return when enough players join, so that the game can be started. */
-    std::vector<AcceptedPlayer> return_when_target_players_joined();
+    GameStarted return_when_target_players_joined();
 
     /**
      * @brief Adds a new player to the container.
      *
      * @throws RejectedPlayerException Throws if there is already a full set of players.
-     * @return types::players_count_t Id of the accepted player.
      */
-    types::player_id_t add_new_player(const AcceptedPlayer &);
+    void add_new_player(const Player &);
 
     /* Return message about specific accpeted player when it is ready. */
     AcceptedPlayer get_accepted_player(types::player_id_t);
@@ -37,7 +36,7 @@ public:
 private:
     std::mutex mutex;
     std::condition_variable condition_variable;
-    std::vector<AcceptedPlayer> accepted_players;
+    std::map<types::player_id_t, Player> accepted_players;
     types::players_count_t target_players_count;
     types::players_count_t current_players_count;
 };

@@ -3,9 +3,9 @@
 #include <assert.h>
 #include "accepted_player_container.h"
 
-#define NUM_THREADS 100
-#define NUM_ADDS_PER_THREAD 100
-#define NUM_PLAYERS 100
+#define NUM_THREADS 3
+#define NUM_ADDS_PER_THREAD 1000
+#define NUM_PLAYERS 10
 
 std::atomic<bool> start = false;
 
@@ -19,7 +19,7 @@ void add_n_players(AcceptedPlayerContainer& container, size_t n)
     {
         try
         {
-            AcceptedPlayer p;
+            Player p;
             container.add_new_player(p);
             counter++;
         }
@@ -51,8 +51,8 @@ int main()
     }
     
     // It should return immediately.
-    std::vector<AcceptedPlayer> v = container.return_when_target_players_joined();
-    assert(v.size() == NUM_PLAYERS);
+    GameStarted m = container.return_when_target_players_joined();
+    assert(m.players.size() == NUM_PLAYERS);
 
     try
     {

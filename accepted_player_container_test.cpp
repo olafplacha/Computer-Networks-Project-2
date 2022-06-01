@@ -1,5 +1,6 @@
 #include <iostream>
 #include <thread>
+#include <assert.h>
 #include "accepted_player_container.h"
 
 #define NUM_THREADS 100
@@ -50,7 +51,8 @@ int main()
     }
     
     // It should return immediately.
-    container.return_when_target_players_joined();
+    std::vector<AcceptedPlayer> v = container.return_when_target_players_joined();
+    assert(v.size() == NUM_PLAYERS);
 
     try
     {

@@ -3,12 +3,14 @@
 AcceptedPlayerContainer::AcceptedPlayerContainer(types::players_count_t target_players_count_) :
     target_players_count(target_players_count_) {}
 
-void AcceptedPlayerContainer::return_when_target_players_joined()
+std::vector<AcceptedPlayer> AcceptedPlayerContainer::return_when_target_players_joined()
 {
     std::unique_lock<std::mutex> lock_guard(mutex);
 
     // Wait until full set of players join.
     condition_variable.wait(lock_guard, [&]{ return target_players_count == current_players_count; });
+
+    return accepted_players;
 }
 
 types::players_count_t AcceptedPlayerContainer::add_new_player(const AcceptedPlayer &player)

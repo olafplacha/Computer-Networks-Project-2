@@ -17,7 +17,7 @@ public:
     AcceptedPlayerContainer(types::players_count_t);
 
     /* Return when enough players join, so that the game can be started. */
-    void return_when_target_players_joined();
+    std::vector<AcceptedPlayer> return_when_target_players_joined();
 
     /**
      * @brief Adds a new player to the container.

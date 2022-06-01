@@ -1,14 +1,14 @@
 #include "accepted_player_container.h"
 
 AcceptedPlayerContainer::AcceptedPlayerContainer(types::players_count_t target_players_count_) :
-    target_players_count(target_players_count_), current_players_count(0) {}
+    target_players_count(target_players_count_) {}
 
 GameStarted AcceptedPlayerContainer::return_when_target_players_joined()
 {
     std::unique_lock<std::mutex> lock_guard(mutex);
 
     // Wait until full set of players join.
-    condition_variable.wait(lock_guard, [&]{ return target_players_count == current_players_count; });
+    condition_variable.wait(lock_guard, [&]{ return target_players_count == accepted_players.size(); });
 
     GameStarted message;
     message.players = accepted_players;
@@ -19,12 +19,12 @@ void AcceptedPlayerContainer::add_new_player(const Player &player)
 {
     std::unique_lock<std::mutex> lock_guard(mutex);
 
-    if (target_players_count == current_players_count) {
+    if (target_players_count == accepted_players.size()) {
         throw RejectedPlayerException("Full set of players already exists!");
     }
 
     // Add a new player to the map.
-    accepted_players.insert({current_players_count++, player});
+    accepted_players.insert({accepted_players.size(), player});
     
     // Notify waiting threads about the new player.
     condition_variable.notify_all();
@@ -39,7 +39,7 @@ AcceptedPlayer AcceptedPlayerContainer::get_accepted_player(types::player_id_t i
     }
 
     // Wait until the specified player is added.
-    condition_variable.wait(lock_guard, [&]{ return current_players_count > id; });
+    condition_variable.wait(lock_guard, [&]{ return accepted_players.size() > id; });
 
     // At this point the player must exist.
     AcceptedPlayer player;

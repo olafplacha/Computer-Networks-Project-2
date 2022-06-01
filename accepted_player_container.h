@@ -1,3 +1,6 @@
+#ifndef ACCEPTED_PLAYER_CONTAINER_H
+#define ACCEPTED_PLAYER_CONTAINER_H
+
 #include <vector>
 #include <stdexcept>
 #include <condition_variable>
@@ -38,5 +41,6 @@ private:
     std::condition_variable condition_variable;
     std::map<types::player_id_t, Player> accepted_players;
     types::players_count_t target_players_count;
-    types::players_count_t current_players_count;
 };
+
+#endif // ACCEPTED_PLAYER_CONTAINER_H

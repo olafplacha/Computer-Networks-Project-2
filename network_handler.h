@@ -16,6 +16,7 @@
 #include <iostream>
 #include <stdexcept>
 #include <cstring>
+#include <memory>
 #include "config.h"
 
 void convert_network_to_host_byte_order(uint8_t* buffer, size_t n);
@@ -60,6 +61,7 @@ protected:
  */
 class TCPHandler : public NetworkHandler {
 public:
+    using ptr = std::shared_ptr<TCPHandler>;
     /**
      * @brief Construct a new TCPHandler object using previously created socket.
      *

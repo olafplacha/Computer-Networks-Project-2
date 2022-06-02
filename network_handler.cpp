@@ -159,8 +159,7 @@ TCPHandler::TCPHandler(std::string& address, types::port_t port, size_t buff_siz
 TCPHandler::~TCPHandler()
 {
     if (shutdown(socket_fd, SHUT_WR) == -1) {
-        std::cerr << std::strerror(errno) << std::endl;
-        exit(EXIT_FAILURE);
+        // Ignore errors.
     }
     if(close(socket_fd) == -1) {
         std::cerr << std::strerror(errno) << std::endl;
@@ -192,7 +191,7 @@ void TCPHandler::send_n_bytes(size_t n, uint8_t* buff)
 {
     // Send until there are no bytes to be sent.
     while (n > 0) {
-        ssize_t bytes_sent = send(socket_fd, buff, n, 0);
+        ssize_t bytes_sent = send(socket_fd, buff, n, MSG_NOSIGNAL);
         if (bytes_sent == -1) {
             // Some error occured.
             throw TCPError(std::strerror(errno));

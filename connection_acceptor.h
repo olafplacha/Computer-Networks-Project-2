@@ -1,7 +1,13 @@
 #ifndef CONNECTION_ACCEPTOR_H
 #define CONNECTION_ACCEPTOR_H
 
+#include <stdexcept>
 #include "config.h"
+
+class TCPAcceptError: public std::runtime_error {
+public:
+    TCPAcceptError(const char* w) : std::runtime_error(w) {}
+};
 
 class ConnectionAcceptor
 {

@@ -22,25 +22,25 @@ ConnectionAcceptor::ConnectionAcceptor(types::port_t port, int backlog_size)
     // Resolve my address.
     err = getaddrinfo(NULL, std::to_string(port).c_str(), &hints, &res);
     if (err != 0) {
-        throw std::runtime_error(gai_strerror(err));
+        throw TCPAcceptError(gai_strerror(err));
     }
 
     // Create a new TCP socket.
     socket_fd = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
     if (socket_fd == -1) {
-        throw std::runtime_error(std::strerror(errno));
+        throw TCPAcceptError(std::strerror(errno));
     }
 
     // Bind the socket to the specified port.
     err = bind(socket_fd, res->ai_addr, res->ai_addrlen);
     if (err != 0) {
-        throw std::runtime_error(gai_strerror(err));
+        throw TCPAcceptError(gai_strerror(err));
     }
 
     // Start listening for new connection requests.
     err = listen(socket_fd, backlog_size);
     if (err != 0) {
-        throw std::runtime_error(gai_strerror(err));
+        throw TCPAcceptError(gai_strerror(err));
     }
 }
 
@@ -48,7 +48,7 @@ int ConnectionAcceptor::accept_another_connection()
 {
     int new_connection_fd = accept(socket_fd, NULL, NULL);
     if (new_connection_fd == -1) {
-        throw std::runtime_error(std::strerror(errno));
+        throw TCPAcceptError(std::strerror(errno));
     }
 
     return new_connection_fd;

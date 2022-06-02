@@ -7,7 +7,6 @@ MoveContainer::MoveContainer(types::player_id_t num_slots)
         ClientMessage m;
         slots.push_back({false, m});
     }
-    
 }
 
 MoveContainer::container_t MoveContainer::atomic_snapshot_and_clear()

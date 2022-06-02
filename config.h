@@ -7,6 +7,7 @@
 
 const int TCP_BUFF_SIZE = 65536;
 const int UDP_BUFF_SIZE = 65536;
+const int TCP_BACKLOG_SIZE = 32;
 
 namespace types
 {

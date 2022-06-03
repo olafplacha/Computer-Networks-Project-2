@@ -17,7 +17,6 @@ ConnectionAcceptor::ConnectionAcceptor(types::port_t port, int backlog_size)
     hints.ai_family = AF_UNSPEC;
     hints.ai_socktype = SOCK_STREAM;
     hints.ai_protocol = IPPROTO_TCP;
-    hints.ai_flags = AI_PASSIVE;
 
     // Resolve my address.
     err = getaddrinfo(NULL, std::to_string(port).c_str(), &hints, &res);

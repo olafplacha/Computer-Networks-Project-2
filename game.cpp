@@ -237,10 +237,10 @@ Turn GameServer::game_init()
 bool GameServer::is_position_legal(const Position& pos, types::coord_t dx, types::coord_t dy)
 {
     // Check if the target position is within the board.
-    if (pos.x == 0 && dx < 0 || pos.x + dx >= size_x) {
+    if ((pos.x == 0 && dx < 0) || (pos.x + dx >= size_x)) {
         return false;
     }
-    if (pos.y == 0 && dy < 0 || pos.y + dy >= size_y) {
+    if ((pos.y == 0 && dy < 0) || (pos.y + dy >= size_y)) {
         return false;
     }
 

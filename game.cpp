@@ -203,13 +203,14 @@ Turn GameServer::game_init()
     Turn turn_message;
     turn_message.turn = 0;
 
-    for (types::player_id_t id = 0; id < players.size(); id++)
+    for (types::player_id_t id = 0; id < scores.size(); id++)
     {
         PlayerMoved event;
 
         Position position;
         position.x = random() % size_x;
         position.y = random() % size_y;
+        player_positions.insert({id, position});
 
         event.id = id;
         event.position = position;
@@ -218,18 +219,15 @@ Turn GameServer::game_init()
 
     for (types::initial_blocks_t i = 0; i < initial_blocks; i++)
     {
+        BlockPlaced event;
+
         Position position;
-        position.x = random();
-        position.y = random();
+        position.x = random() % size_x;
+        position.y = random() % size_y;
+        blocks.insert(position);
 
-        auto it = blocks.insert(position);
-        if (it.second) {
-            // The block did not exist before.
-            BlockPlaced event;
-            event.position = position;
-
-            turn_message.events.push_back(event);
-        }
+        event.position = position;
+        turn_message.events.push_back(event);
     }
 
     return turn_message;

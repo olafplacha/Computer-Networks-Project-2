@@ -95,7 +95,7 @@ void handle_tcp_stream_in(ServerMessageManager::ptr manager)
                 {
                     Player player;
                     player.name = std::get<Join>(msg).name;
-                    player.address = "To be added.";
+                    player.address = "127.0.0.1:1001";
 
                     try
                     {
@@ -167,8 +167,8 @@ void handle_tcp_stream_out(ServerMessageManager::ptr manager)
             
             // Send message about the end of the game.
             turn_container->return_when_game_finished();
-            GameStarted message; // TODO: add map with scores!
-            manager->send_client_message(message);
+            GameEnded message_end; // TODO: add map with scores!
+            manager->send_client_message(message_end);
         }
     }
     catch (const std::exception& e)

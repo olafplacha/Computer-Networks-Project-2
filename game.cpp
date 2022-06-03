@@ -1,3 +1,5 @@
+#include <chrono>
+#include <thread>
 #include "game.h"
 
 void Game::explode_one_direction(const Position& pos, types::coord_t dx, types::coord_t dy)
@@ -184,8 +186,32 @@ GameServer::GameServer(const options_server& op)
     game_length = op.game_length;
     bomb_timer = op.bomb_timer;
     explosion_radius = op.explosion_radius;
-    turn_duration = op.turn_duration;
+    
+    turn = 0;
     seed = op.seed;
+    turn_duration = op.turn_duration;
 
-    // Init blocks and players...
+    // Initialize the map with scores.
+    for (types::player_id_t i = 0; i < op.players_count; i++)
+    {
+        scores.insert({i, 0});
+    }   
+}
+
+Turn GameServer::game_init()
+{
+    Turn turn_message;
+    turn_message.turn = 0;
+
+    return turn_message;
+}
+
+Turn GameServer::apply_moves(MoveContainer& move_container)
+{
+    Turn turn_message;
+    std::this_thread::sleep_for(std::chrono::milliseconds(turn_duration));
+
+    turn_message.turn = ++turn;
+
+    return turn_message;
 }

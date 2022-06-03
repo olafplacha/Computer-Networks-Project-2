@@ -33,6 +33,9 @@ protected:
     std::map<types::player_id_t, Position> player_positions;
     std::unordered_set<Position, Position::HashFunction> blocks;
     std::unordered_map<types::bomb_id_t, Bomb> bombs;
+
+    /* Score of each player. */
+    std::map<types::player_id_t, types::score_t> scores;
     
     /* Auxiliary data structures, cleared after each turn. */
     std::set<types::player_id_t> turn_robots_destroyed;
@@ -59,9 +62,6 @@ private:
     void apply_event(const BlockPlaced&);
 
     void update_scores();
-
-    /* Score of each player. */
-    std::map<types::player_id_t, types::score_t> scores;
 };
 
 class GameServer : public Game

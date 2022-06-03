@@ -110,7 +110,7 @@ void GameClient::apply_event(const BlockPlaced& event)
     blocks.insert(event.position);
 }
 
-void GameClient::update_scores()
+void Game::update_scores()
 {
     for(const types::player_id_t& id : turn_robots_destroyed) {
         auto it = scores.find(id);
@@ -178,7 +178,7 @@ GameMessage GameClient::get_game_state() const
     return message;
 }
 
-GameServer::GameServer(const options_server& op)
+GameServer::GameServer(const options_server& op) : random(op.seed)
 {
     server_name = op.server_name;
     size_x = op.size_x;
@@ -188,8 +188,8 @@ GameServer::GameServer(const options_server& op)
     explosion_radius = op.explosion_radius;
     
     turn = 0;
-    seed = op.seed;
     turn_duration = op.turn_duration;
+    initial_blocks = op.initial_blocks;
 
     // Initialize the map with scores.
     for (types::player_id_t i = 0; i < op.players_count; i++)
@@ -202,6 +202,35 @@ Turn GameServer::game_init()
 {
     Turn turn_message;
     turn_message.turn = 0;
+
+    for (types::player_id_t id = 0; id < players.size(); id++)
+    {
+        PlayerMoved event;
+
+        Position position;
+        position.x = random() % size_x;
+        position.y = random() % size_y;
+
+        event.id = id;
+        event.position = position;
+        turn_message.events.push_back(event);
+    }
+
+    for (types::initial_blocks_t i = 0; i < initial_blocks; i++)
+    {
+        Position position;
+        position.x = random();
+        position.y = random();
+
+        auto it = blocks.insert(position);
+        if (it.second) {
+            // The block did not exist before.
+            BlockPlaced event;
+            event.position = position;
+
+            turn_message.events.push_back(event);
+        }
+    }
 
     return turn_message;
 }

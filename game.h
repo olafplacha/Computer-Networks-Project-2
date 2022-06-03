@@ -5,6 +5,7 @@
 #include <map>
 #include <unordered_set>
 #include <unordered_map>
+#include <random>
 #include "config.h"
 #include "parser.h"
 #include "messages.h"
@@ -16,6 +17,7 @@ protected:
     void decrease_bomb_timers();
     void find_explosions(const Bomb&);
     void explode_one_direction(const Position&, types::coord_t, types::coord_t);
+    void update_scores();
 
     /* Game settings. */
     std::string server_name;
@@ -60,8 +62,6 @@ private:
     void apply_event(const BombExploded&);
     void apply_event(const PlayerMoved&);
     void apply_event(const BlockPlaced&);
-
-    void update_scores();
 };
 
 class GameServer : public Game
@@ -75,8 +75,9 @@ public:
     Turn apply_moves(MoveContainer&);
 
 private:
-    types::seed_t seed;
+    std::minstd_rand random;
     types::turn_duration_t turn_duration;
+    types::initial_blocks_t initial_blocks;
 };
 
 #endif // GAME_H

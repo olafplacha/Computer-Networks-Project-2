@@ -75,9 +75,21 @@ public:
     Turn apply_moves(MoveContainer&);
 
 private:
+    bool is_position_legal(const Position&, types::coord_t, types::coord_t);
+    void handle_exploding_bomb(types::bomb_id_t, Turn&);
+    void handle_player_move(types::player_id_t, const ClientMessage&);
+
+    void apply_player_move(types::player_id_t, Turn&, const Join&);
+    void apply_player_move(types::player_id_t, Turn&, const PlaceBomb&);
+    void apply_player_move(types::player_id_t, Turn&, const PlaceBlock&);
+    void apply_player_move(types::player_id_t, Turn&, const Move&);
+
+    void update_blocks();
+
     std::minstd_rand random;
     types::turn_duration_t turn_duration;
     types::initial_blocks_t initial_blocks;
+    types::bomb_id_t bomb_counter;
 };
 
 #endif // GAME_H

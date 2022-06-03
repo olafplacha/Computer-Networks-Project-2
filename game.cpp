@@ -187,9 +187,10 @@ GameServer::GameServer(const options_server& op) : random(op.seed)
     bomb_timer = op.bomb_timer;
     explosion_radius = op.explosion_radius;
     
-    turn = 0;
     turn_duration = op.turn_duration;
     initial_blocks = op.initial_blocks;
+    bomb_counter = 0;
+    turn = 0;
 
     // Initialize the map with scores.
     for (types::player_id_t i = 0; i < op.players_count; i++)
@@ -233,11 +234,218 @@ Turn GameServer::game_init()
     return turn_message;
 }
 
+bool GameServer::is_position_legal(const Position& pos, types::coord_t dx, types::coord_t dy)
+{
+    // Check if the target position is within the board.
+    if (pos.x == 0 && dx < 0 || pos.x + dx >= size_x) {
+        return false;
+    }
+    if (pos.y == 0 && dy < 0 || pos.y + dy >= size_y) {
+        return false;
+    }
+
+    // Check if the target position is not blocked.
+    Position target;
+    target.x = pos.x + dx;
+    target.y = pos.y + dy;
+
+    if (blocks.find(target) != blocks.end()) {
+        return false;
+    }
+
+    // The target position is within the board and is not blocked.
+    return true;
+}
+
+void GameServer::handle_exploding_bomb(types::bomb_id_t bomb_id, Turn& turn_message) 
+{   
+    // Get the exploding bomb.
+    Bomb bomb = bombs.at(bomb_id);
+
+    BombExploded event;
+    event.id = bomb_id;
+
+    // Find fields that explode.
+    explosions.clear();
+    find_explosions(bomb);
+
+    // Mark exploded blocks.
+    std::vector<Position> bomb_blocks_destroyed;
+
+    for (const Position& pos : explosions) {
+        if (blocks.find(pos) != blocks.end()) {
+            bomb_blocks_destroyed.push_back(pos);
+            turn_blocks_destroyed.insert(pos);
+        }
+    }
+
+    // Mark exploded players.
+    std::vector<types::player_id_t> bomb_robots_destroyed;
+
+    for (const auto& [id, pos] : player_positions) {
+        if (explosions.find(pos) != explosions.end()) {
+            bomb_robots_destroyed.push_back(id);
+            turn_robots_destroyed.insert(id);
+        }
+    }
+
+    // Add the explosion event.
+    event.blocks_destroyed = bomb_blocks_destroyed;
+    event.robots_destroyed = bomb_robots_destroyed;
+    turn_message.events.push_back(event);
+}
+
+void GameServer::apply_player_move(types::player_id_t, Turn&, const Join&)
+{
+    // Ignore.
+}
+
+void GameServer::apply_player_move(types::player_id_t id, Turn& turn_message, const PlaceBomb&)
+{
+    // Get the player's position.
+    Position pos = player_positions.at(id);
+
+    Bomb bomb;
+    bomb.timer = bomb_timer;
+    bomb.position = pos;
+
+    // Add the newly placed bomb.
+    bombs.insert({bomb_counter, bomb});
+
+    // Create the event and add it to the turn message.
+    BombPlaced event;
+    event.id = bomb_counter++;
+    event.position = pos;
+    turn_message.events.push_back(event);
+}
+
+void GameServer::apply_player_move(types::player_id_t id, Turn& turn_message, const PlaceBlock&)
+{
+    // Get the player's position.
+    Position pos = player_positions.at(id);
+
+    // Check if there is already a block placed at this position.
+    if (blocks.find(pos) != blocks.end()) {
+        return;
+    }
+
+    blocks.insert(pos);
+
+    // Create the event and add it to the turn message.
+    BlockPlaced event;
+    event.position = pos;
+    turn_message.events.push_back(event);
+}
+
+void GameServer::apply_player_move(types::player_id_t id, Turn& turn_message, const Move& move)
+{
+    // Get the player's position.
+    Position pos = player_positions.at(id);
+
+    types::coord_t dx, dy;
+    switch (move.direction)
+    {
+    case Direction::Up:
+        dx = 0;
+        dy = 1;
+        break;
+
+    case Direction::Right:
+        dx = 1;
+        dy = 0;
+        break;
+
+    case Direction::Down:
+        dx = 0;
+        dy = -1;
+        break;
+    
+    default:
+        dx = -1;
+        dy = 0;
+        break;
+    }
+
+    // Check if the target position is legal.
+    bool legal = is_position_legal(pos, dx, dy);
+
+    if (legal) {
+        // Update player's position.
+        pos.x += dx;
+        pos.y += dy;
+        player_positions.at(id) = pos;
+
+        // And add it to the turn message.
+        PlayerMoved event;
+        event.id = id;
+        event.position = pos;
+        turn_message.events.push_back(event);
+    }
+}
+
+void GameServer::update_blocks()
+{
+    for (const Position& pos : turn_blocks_destroyed) {
+        blocks.erase(pos);
+    }
+}
+
 Turn GameServer::apply_moves(MoveContainer& move_container)
 {
     Turn turn_message;
     std::this_thread::sleep_for(std::chrono::milliseconds(turn_duration));
 
+    // Get the last move from every player.
+    MoveContainer::container_t moves = move_container.atomic_snapshot_and_clear();
+
+    // Clear turn specific data structures.
+    turn_blocks_destroyed.clear();
+    turn_robots_destroyed.clear();
+
+    // Check what bombs explode.
+    decrease_bomb_timers();
+
+    for (auto it = bombs.cbegin(), next_it = it; it != bombs.cend(); it = next_it) {
+        ++next_it;
+        if (it->second.timer == 0) {
+            // The bomb explodes.
+            handle_exploding_bomb(it->first, turn_message);
+
+            // Erase the bomb after explosion.
+            bombs.erase(it);
+        }
+    }
+
+    for (types::player_id_t i = 0; i < scores.size(); i++)
+    {
+        // Check if the player way destroyed.
+        if (turn_robots_destroyed.find(i) != turn_robots_destroyed.end()) {
+            // Recreate the player in random position.
+            Position pos;
+            pos.x = random() % size_x;
+            pos.y = random() % size_y;
+
+            player_positions.at(i) = pos;
+
+            PlayerMoved event;
+            event.id = i;
+            event.position = pos;
+            turn_message.events.push_back(event);
+        }
+        else {
+            // Handle the player's move.
+            auto [updated, move] = moves.at(i);
+
+            // Check if the move was updated from the last snapshot.
+            if (updated) {
+                // Apply player's move.
+                std::visit([&](auto&& arg) {apply_player_move(i, turn_message, arg);}, move);
+            }
+        }
+    }
+    
+    update_blocks();
+    update_scores();
     turn_message.turn = ++turn;
 
     return turn_message;

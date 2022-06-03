@@ -8,6 +8,7 @@
 #include "config.h"
 #include "parser.h"
 #include "messages.h"
+#include "move_container.h"
 
 class Game
 {
@@ -68,6 +69,10 @@ class GameServer : public Game
 public:
     /*  Create the game based on the provided options. */
     GameServer(const options_server&);
+
+    Turn game_init();
+
+    Turn apply_moves(MoveContainer&);
 
 private:
     types::seed_t seed;

@@ -4,6 +4,7 @@
 #include <thread>
 #include <csignal>
 #include <vector>
+#include <chrono>
 #include <shared_mutex>
 #include "connection_acceptor.h"
 #include "network_handler.h"
@@ -13,6 +14,7 @@
 #include "accepted_player_container.h"
 #include "move_container.h"
 #include "turn_container.h"
+#include "game.h"
 
 typedef std::unique_lock<std::shared_mutex>  WriteLock;
 typedef std::shared_lock<std::shared_mutex>  ReadLock;
@@ -64,10 +66,10 @@ void handle_tcp_stream_in(ServerMessageManager::ptr manager)
     size_t last_game_version = 0;
     size_t current_game_version;
 
-    // True if and only if the client successfully joined the current version of the game.
+    // True if and only if the client successfully joined the most recent version of the game.
     bool joined_the_game = false;
 
-    // Valid only if the client joined the game.
+    // Valid only if the client joined the most recent version of the game.
     types::player_id_t player_id;
 
     try {
@@ -84,9 +86,9 @@ void handle_tcp_stream_in(ServerMessageManager::ptr manager)
 
             if (last_game_version != current_game_version) {
                 // A new game was started.
+                last_game_version = current_game_version;
                 joined_the_game = false;
             }
-
 
             if (std::holds_alternative<Join>(msg)) {
                 if (!joined_the_game) 
@@ -110,8 +112,8 @@ void handle_tcp_stream_in(ServerMessageManager::ptr manager)
                 }
             }
             else {
-                if (joined_the_game) {
-                    // Proceed only if the client joined the game.
+                if (joined_the_game && is_game_started()) {
+                    // Proceed only if the client joined the most recent version of the game and the game is underway.
                     move_container->update_slot(player_id, msg);
                 }
             }
@@ -134,15 +136,39 @@ void handle_tcp_stream_out(ServerMessageManager::ptr manager)
 
         while (true) {
             AcceptedPlayerContainer::ptr accepted_players;
-            TurnContainer
+            TurnContainer::ptr turn_container;
 
             // Get most recent structures with players and moves.
             {
                 ReadLock lock_guard(shared.mutex);
                 accepted_players = shared.accepted_players;
-                move_container = shared.move_container;
-                game_version = shared.game_version;
+                turn_container = shared.turn_container;
             }
+
+            if (!is_game_started()) {
+                // Show accepted players.
+                for (types::player_id_t i = 0; i < settings.players_count; i++)
+                {
+                    AcceptedPlayer message = accepted_players->get_accepted_player(i);
+                    manager->send_client_message(message);
+                }
+            }
+
+            // Send message about the start of the game.
+            GameStarted message = accepted_players->return_when_target_players_joined();
+            manager->send_client_message(message);
+
+            for (types::turn_t i = 0; i < settings.game_length + 1; i++)
+            {
+                // Wait for each turn to complete and send it.
+                Turn message = turn_container->get_turn(i);
+                manager->send_client_message(message);
+            }
+            
+            // Send message about the end of the game.
+            turn_container->return_when_game_finished();
+            GameStarted message; // TODO: add map with scores!
+            manager->send_client_message(message);
         }
     }
     catch (const std::exception& e)
@@ -195,12 +221,46 @@ int main(int argc, char* argv[])
     // Create thread for accepting new connection.
     std::thread thread_acceptor{[=]{ accept_new_connections(settings.port); }};
 
-
-
     while (true)
     {
-        sleep(100);
+        AcceptedPlayerContainer::ptr accepted_players;
+        MoveContainer::ptr move_container;
+        TurnContainer::ptr turn_container;
+
+        {
+            ReadLock lock_guard(shared.mutex);
+            accepted_players = shared.accepted_players;
+            move_container = shared.move_container;
+            turn_container = shared.turn_container;
+        }
+
+        // Wait until enough players join.
+        accepted_players->return_when_target_players_joined();
+
+        {
+            WriteLock lock_guard(shared.mutex);
+            shared.game_started = true;
+        }
+
+        // Initialize the game.
+        GameServer game(settings);
+        Turn turn = game.game_init();
+        turn_container->append_new_turn(turn);
+
+        // Carry out all the turns.
+        for (types::turn_t i = 0; i < settings.game_length; i++)
+        {
+            turn = game.apply_moves(*move_container);
+            turn_container->append_new_turn(turn);
+        }
+
+        // Prepare data structures for the next round.
+        reset_shared();
+
+        // Mark the last game as finished.    
+        turn_container->mark_the_game_as_finished();
     }
+
     thread_acceptor.join();
 
     return 0;

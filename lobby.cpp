@@ -8,7 +8,7 @@ LobbyClient::LobbyClient(const Hello& hello)
     size_y = hello.size_y;
     game_length = hello.game_length;
     explosion_radius = hello.explosion_radius;
-    bomb_timer = hello.bomber_timer;
+    bomb_timer = hello.bomb_timer;
 }
 
 void LobbyClient::accept(const AcceptedPlayer& player)

@@ -140,6 +140,17 @@ void Move::serialize(TCPHandler& handler) const
     handler.send_element<uint8_t>(static_cast<uint8_t>(direction));
 }
 
+Hello::Hello(const options_server& op)
+{
+    server_name = op.server_name;
+    players_count = op.players_count;
+    size_x = op.size_x;
+    size_y = op.size_y;
+    game_length = op.game_length;
+    explosion_radius = op.explosion_radius;
+    bomb_timer = op.bomb_timer;
+}
+
 Hello::Hello(TCPHandler& handler)
 {
     server_name = read_string(handler);
@@ -148,7 +159,7 @@ Hello::Hello(TCPHandler& handler)
     size_y = handler.read_element<types::size_xy_t>();
     game_length = handler.read_element<types::game_length_t>();
     explosion_radius = handler.read_element<types::explosion_radius_t>();
-    bomber_timer = handler.read_element<types::bomb_timer_t>();
+    bomb_timer = handler.read_element<types::bomb_timer_t>();
 }
 
 void Hello::serialize(TCPHandler& handler) const
@@ -165,7 +176,7 @@ void Hello::serialize(TCPHandler& handler) const
     handler.send_element<types::size_xy_t>(size_y);
     handler.send_element<types::game_length_t>(game_length);
     handler.send_element<types::explosion_radius_t>(explosion_radius);
-    handler.send_element<types::bomb_timer_t>(bomber_timer);
+    handler.send_element<types::bomb_timer_t>(bomb_timer);
 }
 
 Player::Player(TCPHandler& handler)

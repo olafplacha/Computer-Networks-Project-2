@@ -38,7 +38,9 @@ private:
 class ServerMessageManager
 {
 public:
-    ServerMessageManager(TCPHandler &);
+    using ptr = std::shared_ptr<ServerMessageManager>;
+
+    ServerMessageManager(TCPHandler::ptr &);
 
     ClientMessage read_client_message();
 
@@ -53,7 +55,7 @@ public:
     void operator=(ServerMessageManager const &) = delete;
 
 private:
-    TCPHandler &tcp_handler;
+    TCPHandler::ptr tcp_handler;
 };
 
 #endif // MESSAGES_H

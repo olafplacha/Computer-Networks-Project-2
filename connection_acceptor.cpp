@@ -51,6 +51,14 @@ int ConnectionAcceptor::accept_another_connection()
         throw TCPAcceptError(std::strerror(errno));
     }
 
+    // Disable Nagle's algorithm.
+    int err;
+    int flag = 1;
+    err = setsockopt(new_connection_fd, IPPROTO_TCP, TCP_NODELAY, (char *) &flag, sizeof(int));
+    if (err != 0) {
+        throw std::runtime_error(std::strerror(errno));
+    }
+
     return new_connection_fd;
 }
 

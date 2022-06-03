@@ -8,6 +8,7 @@
 #include <set>
 #include <unordered_set>
 #include "network_handler.h"
+#include "parser.h"
 
 enum class Direction : std::underlying_type_t<std::byte> { Up, Right, Down, Left };
 
@@ -42,9 +43,10 @@ struct Hello {
     types::size_xy_t size_y;
     types::game_length_t game_length;
     types::explosion_radius_t explosion_radius;
-    types::bomb_timer_t bomber_timer;
+    types::bomb_timer_t bomb_timer;
 
     Hello() = default;
+    Hello(const options_server&);
     Hello(TCPHandler& handler);
     void serialize(TCPHandler&) const;
 };

@@ -1,6 +1,6 @@
 #include "move_container.h"
 
-MoveContainer::MoveContainer(types::player_id_t num_slots)
+MoveContainer::MoveContainer(types::players_count_t num_slots)
 {
     for (size_t i = 0; i < num_slots; i++)
     {

@@ -10,11 +10,17 @@
 class TurnContainer
 {
 public:
+    using ptr = std::shared_ptr<TurnContainer>;
+
     TurnContainer() = default;
 
     void append_new_turn(const Turn&);
 
     Turn get_turn(types::turn_t);
+
+    /* Delete copy constructor and copy assignment. */
+    TurnContainer(TurnContainer const &) = delete;
+    void operator=(TurnContainer const &) = delete;
 
 private:
     std::mutex mutex;

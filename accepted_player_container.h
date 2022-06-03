@@ -17,9 +17,11 @@ public:
 class AcceptedPlayerContainer
 {
 public:
+    using ptr = std::shared_ptr<AcceptedPlayerContainer>;
+
     AcceptedPlayerContainer(types::players_count_t);
 
-    /* Return when enough players join, so that the game can be started. */
+    /* Return when enough players join, so that the game can be started. It returns no sooner than the game starts. */
     GameStarted return_when_target_players_joined();
 
     /**
@@ -27,7 +29,7 @@ public:
      *
      * @throws RejectedPlayerException Throws if there is already a full set of players.
      */
-    void add_new_player(const Player &);
+    types::player_id_t add_new_player(const Player &);
 
     /* Return message about specific accpeted player when it is ready. */
     AcceptedPlayer get_accepted_player(types::player_id_t);

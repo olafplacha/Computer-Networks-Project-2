@@ -79,6 +79,8 @@ public:
      */
     TCPHandler(std::string& address, types::port_t port, size_t buff_size_);
 
+    std::string get_peer_name() const;
+
     ~TCPHandler();
 
     /**

@@ -95,7 +95,7 @@ void handle_tcp_stream_in(ServerMessageManager::ptr manager)
                 {
                     Player player;
                     player.name = std::get<Join>(msg).name;
-                    player.address = "127.0.0.1:1001";
+                    player.address = manager->get_client_name();
 
                     try
                     {

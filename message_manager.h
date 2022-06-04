@@ -50,6 +50,8 @@ public:
     void send_client_message(const Turn &);
     void send_client_message(const GameEnded &);
 
+    std::string get_client_name() const;
+
     /* Delete copy constructor and copy assignment. */
     ServerMessageManager(ServerMessageManager const &) = delete;
     void operator=(ServerMessageManager const &) = delete;

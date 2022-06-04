@@ -158,3 +158,8 @@ void ServerMessageManager::send_client_message(const GameEnded &message)
     tcp_handler->send_element<types::message_id_t>(clientServerCodes::gameEnded);
     message.serialize(*tcp_handler);
 }
+
+std::string ServerMessageManager::get_client_name() const
+{
+    return tcp_handler->get_peer_name();
+}

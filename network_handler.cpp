@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <sys/socket.h>
 #include <netinet/tcp.h>
+#include <arpa/inet.h>
 #include <netdb.h>
 #include <iostream>
 #include <cerrno>
@@ -299,5 +300,25 @@ UDPHandler::~UDPHandler()
     if(close(send_socket_fd) == -1) {
         std::cerr << std::strerror(errno) << std::endl;
         exit(EXIT_FAILURE);
+    }
+}
+
+std::string TCPHandler::get_peer_name() const
+{
+    int err;
+    char str[INET6_ADDRSTRLEN];
+    struct sockaddr_in6 address;
+    socklen_t addres_len = sizeof(address);
+
+    err = getpeername(socket_fd, (struct sockaddr *) &address, &addres_len);
+    if (err == -1) {
+        throw std::runtime_error(std::strerror(errno));
+    }
+
+    if(inet_ntop(AF_INET6, &address.sin6_addr, str, sizeof(str))) {
+        return std::string(str);
+    }
+    else {
+        throw std::runtime_error(std::strerror(errno));
     }
 }

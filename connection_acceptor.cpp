@@ -11,27 +11,22 @@
 ConnectionAcceptor::ConnectionAcceptor(types::port_t port, int backlog_size)
 {
     int err;
-    struct addrinfo hints, *res;
+    struct sockaddr_in6 serveraddr;
 
-    memset(&hints, 0, sizeof(struct addrinfo));
-    hints.ai_family = AF_UNSPEC;
-    hints.ai_socktype = SOCK_STREAM;
-    hints.ai_protocol = IPPROTO_TCP;
-
-    // Resolve my address.
-    err = getaddrinfo(NULL, std::to_string(port).c_str(), &hints, &res);
-    if (err != 0) {
-        throw TCPAcceptError(gai_strerror(err));
-    }
+    // Support for both IPv4 and IPv6 addresses.
+    memset(&serveraddr, 0, sizeof(serveraddr));
+    serveraddr.sin6_family = AF_INET6;
+    serveraddr.sin6_port = htons(port);
+    serveraddr.sin6_addr = in6addr_any;
 
     // Create a new TCP socket.
-    socket_fd = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
+    socket_fd = socket(AF_INET6, SOCK_STREAM, IPPROTO_TCP);
     if (socket_fd == -1) {
         throw TCPAcceptError(std::strerror(errno));
     }
 
     // Bind the socket to the specified port.
-    err = bind(socket_fd, res->ai_addr, res->ai_addrlen);
+    err = bind(socket_fd, (struct sockaddr *)&serveraddr, sizeof(serveraddr));
     if (err != 0) {
         throw TCPAcceptError(gai_strerror(err));
     }

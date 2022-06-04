@@ -316,7 +316,7 @@ std::string TCPHandler::get_peer_name() const
     }
 
     if(inet_ntop(AF_INET6, &address.sin6_addr, str, sizeof(str))) {
-        return std::string(str);
+        return "[" + std::string(str) + "]:" + std::to_string(ntohs(address.sin6_port));
     }
     else {
         throw std::runtime_error(std::strerror(errno));

@@ -2,15 +2,14 @@
 #include <thread>
 #include "game.h"
 
-void Game::explode_one_direction(const Position& pos, types::coord_t dx, types::coord_t dy)
-{
+void Game::explode_one_direction(const Position &pos, types::coord_t dx, types::coord_t dy) {
     types::coord_t curr_x = pos.x;
     types::coord_t curr_y = pos.y;
     types::explosion_radius_t curr_radius = 0;
 
     while (curr_x >= 0 && curr_x < size_x && curr_y >= 0 && curr_y < size_y && curr_radius <= explosion_radius) {
         // Casting is safe because of the above condition.
-        Position p;
+        Position p{};
         p.x = (types::size_xy_t) curr_x;
         p.y = (types::size_xy_t) curr_y;
 
@@ -27,8 +26,7 @@ void Game::explode_one_direction(const Position& pos, types::coord_t dx, types::
     }
 }
 
-void Game::find_explosions(const Bomb& bomb)
-{
+void Game::find_explosions(const Bomb &bomb) {
     Position pos = bomb.position;
     explode_one_direction(pos, 0, 1);
     explode_one_direction(pos, 1, 0);
@@ -36,15 +34,13 @@ void Game::find_explosions(const Bomb& bomb)
     explode_one_direction(pos, -1, 0);
 }
 
-void Game::decrease_bomb_timers()
-{
-    for(auto &[id, bomb] : bombs) {
+void Game::decrease_bomb_timers() {
+    for (auto &[id, bomb]: bombs) {
         bomb.timer -= 1;
     }
 }
 
-GameClient::GameClient(const Hello& hello, const GameStarted& start)
-{
+GameClient::GameClient(const Hello &hello, const GameStarted &start) {
     // Game settings.
     server_name = hello.server_name;
     size_x = hello.size_x;
@@ -56,27 +52,25 @@ GameClient::GameClient(const Hello& hello, const GameStarted& start)
     // Competitors.
     players = start.players;
 
-    for(const auto& [id, player] : players) {
+    for (const auto&[id, player]: players) {
         // Initialize players' positions.
-        Position p;
+        Position p{};
         player_positions.insert({id, p});
         // Initialize players' scores.
         scores.insert({id, 0});
     }
 }
 
-void GameClient::apply_event(const BombPlaced& event)
-{
+void GameClient::apply_event(const BombPlaced &event) {
     // Add a new bomb.
-    Bomb bomb;
+    Bomb bomb{};
     bomb.position = event.position;
     bomb.timer = bomb_timer;
 
     bombs.insert({event.id, bomb});
 }
 
-void GameClient::apply_event(const BombExploded& event)
-{
+void GameClient::apply_event(const BombExploded &event) {
     // Find the exploding bomb, mark exploded positions and erase the bomb.
     auto it = bombs.find(event.id);
     if (it != bombs.end()) {
@@ -85,18 +79,17 @@ void GameClient::apply_event(const BombExploded& event)
     }
 
     // Mark destroyed robots.
-    for (const types::player_id_t& id : event.robots_destroyed) {
+    for (const types::player_id_t &id: event.robots_destroyed) {
         turn_robots_destroyed.insert(id);
     }
 
     // Add removed blocks.
-    for (const Position& pos : event.blocks_destroyed) {
+    for (const Position &pos: event.blocks_destroyed) {
         turn_blocks_destroyed.insert(pos);
     }
 }
 
-void GameClient::apply_event(const PlayerMoved& event)
-{
+void GameClient::apply_event(const PlayerMoved &event) {
     // Change player's position.
     auto it = player_positions.find(event.id);
     if (it != player_positions.end()) {
@@ -104,15 +97,13 @@ void GameClient::apply_event(const PlayerMoved& event)
     }
 }
 
-void GameClient::apply_event(const BlockPlaced& event)
-{
+void GameClient::apply_event(const BlockPlaced &event) {
     // Add a new block.
     blocks.insert(event.position);
 }
 
-void Game::update_scores()
-{
-    for(const types::player_id_t& id : turn_robots_destroyed) {
+void Game::update_scores() {
+    for (const types::player_id_t &id: turn_robots_destroyed) {
         auto it = scores.find(id);
         if (it != scores.end()) {
             it->second += 1;
@@ -120,8 +111,7 @@ void Game::update_scores()
     }
 }
 
-void GameClient::apply_turn(const Turn& turn_message)
-{
+void GameClient::apply_turn(const Turn &turn_message) {
     turn = turn_message.turn;
     decrease_bomb_timers();
 
@@ -130,23 +120,22 @@ void GameClient::apply_turn(const Turn& turn_message)
     turn_blocks_destroyed.clear();
     turn_robots_destroyed.clear();
 
-    for (const Event& event : turn_message.events) {
+    for (const Event &event: turn_message.events) {
         // Apply each event to the state of the game.
-        std::visit([&](auto&& arg) {
+        std::visit([&](auto &&arg) {
             apply_event(arg);
         }, event);
     }
 
     // After all bombs exploded, remove destroyed blocks.
-    for (const Position& pos : turn_blocks_destroyed) {
+    for (const Position &pos: turn_blocks_destroyed) {
         blocks.erase(pos);
     }
 
     update_scores();
 }
 
-GameMessage GameClient::get_game_state() const
-{
+GameMessage GameClient::get_game_state() const {
     GameMessage message;
     message.server_name = server_name;
     message.size_x = size_x;
@@ -157,19 +146,19 @@ GameMessage GameClient::get_game_state() const
     message.player_positions = player_positions;
 
     std::vector<Position> blocks_vec;
-    for (const Position& p : blocks) {
+    for (const Position &p: blocks) {
         blocks_vec.push_back(p);
     }
     message.blocks = blocks_vec;
 
     std::vector<Bomb> bombs_vec;
-    for (auto const& [id, b] : bombs) {
+    for (auto const&[id, b]: bombs) {
         bombs_vec.push_back(b);
     }
     message.bombs = bombs_vec;
 
     std::vector<Position> explosions_vec;
-    for (const Position& p : explosions) {
+    for (const Position &p: explosions) {
         explosions_vec.push_back(p);
     }
     message.explosions = explosions_vec;
@@ -178,8 +167,7 @@ GameMessage GameClient::get_game_state() const
     return message;
 }
 
-GameServer::GameServer(const options_server& op) : random(op.seed)
-{
+GameServer::GameServer(const options_server &op) : random(op.seed) {
     server_name = op.server_name;
     size_x = op.size_x;
     size_y = op.size_y;
@@ -193,49 +181,44 @@ GameServer::GameServer(const options_server& op) : random(op.seed)
     turn = 0;
 
     // Initialize the map with scores.
-    for (types::player_id_t i = 0; i < op.players_count; i++)
-    {
+    for (types::player_id_t i = 0; i < op.players_count; i++) {
         scores.insert({i, 0});
     }
 }
 
-Turn GameServer::game_init()
-{
+Turn GameServer::game_init() {
     Turn turn_message;
     turn_message.turn = 0;
 
-    for (types::player_id_t id = 0; id < scores.size(); id++)
-    {
-        PlayerMoved event;
+    for (types::player_id_t id = 0; id < scores.size(); id++) {
+        PlayerMoved event{};
 
-        Position position;
+        Position position{};
         position.x = (types::size_xy_t) (random() % size_x);
         position.y = (types::size_xy_t) (random() % size_y);
         player_positions.insert({id, position});
 
         event.id = id;
         event.position = position;
-        turn_message.events.push_back(event);
+        turn_message.events.emplace_back(event);
     }
 
-    for (types::initial_blocks_t i = 0; i < initial_blocks; i++)
-    {
-        BlockPlaced event;
+    for (types::initial_blocks_t i = 0; i < initial_blocks; i++) {
+        BlockPlaced event{};
 
-        Position position;
+        Position position{};
         position.x = (types::size_xy_t) (random() % size_x);
         position.y = (types::size_xy_t) (random() % size_y);
         blocks.insert(position);
 
         event.position = position;
-        turn_message.events.push_back(event);
+        turn_message.events.emplace_back(event);
     }
 
     return turn_message;
 }
 
-bool GameServer::is_position_legal(const Position& pos, types::coord_t dx, types::coord_t dy)
-{
+bool GameServer::is_position_legal(const Position &pos, types::coord_t dx, types::coord_t dy) {
     // Check if the target position is within the board.
     if ((pos.x == 0 && dx < 0) || (pos.x + dx >= size_x)) {
         return false;
@@ -245,7 +228,7 @@ bool GameServer::is_position_legal(const Position& pos, types::coord_t dx, types
     }
 
     // Check if the target position is not blocked.
-    Position target;
+    Position target{};
     target.x = (types::size_xy_t) (pos.x + dx);
     target.y = (types::size_xy_t) (pos.y + dy);
 
@@ -257,8 +240,7 @@ bool GameServer::is_position_legal(const Position& pos, types::coord_t dx, types
     return true;
 }
 
-void GameServer::handle_exploding_bomb(types::bomb_id_t bomb_id, Turn& turn_message)
-{
+void GameServer::handle_exploding_bomb(types::bomb_id_t bomb_id, Turn &turn_message) {
     // Get the exploding bomb.
     Bomb bomb = bombs.at(bomb_id);
 
@@ -272,7 +254,7 @@ void GameServer::handle_exploding_bomb(types::bomb_id_t bomb_id, Turn& turn_mess
     // Mark exploded blocks.
     std::vector<Position> bomb_blocks_destroyed;
 
-    for (const Position& pos : explosions) {
+    for (const Position &pos: explosions) {
         if (blocks.find(pos) != blocks.end()) {
             bomb_blocks_destroyed.push_back(pos);
             turn_blocks_destroyed.insert(pos);
@@ -282,7 +264,7 @@ void GameServer::handle_exploding_bomb(types::bomb_id_t bomb_id, Turn& turn_mess
     // Mark exploded players.
     std::vector<types::player_id_t> bomb_robots_destroyed;
 
-    for (const auto& [id, pos] : player_positions) {
+    for (const auto&[id, pos]: player_positions) {
         if (explosions.find(pos) != explosions.end()) {
             bomb_robots_destroyed.push_back(id);
             turn_robots_destroyed.insert(id);
@@ -292,20 +274,18 @@ void GameServer::handle_exploding_bomb(types::bomb_id_t bomb_id, Turn& turn_mess
     // Add the explosion event.
     event.blocks_destroyed = bomb_blocks_destroyed;
     event.robots_destroyed = bomb_robots_destroyed;
-    turn_message.events.push_back(event);
+    turn_message.events.emplace_back(event);
 }
 
-void GameServer::apply_player_move(types::player_id_t, Turn&, const Join&)
-{
+void GameServer::apply_player_move(types::player_id_t, Turn &, const Join &) {
     // Ignore.
 }
 
-void GameServer::apply_player_move(types::player_id_t id, Turn& turn_message, const PlaceBomb&)
-{
+void GameServer::apply_player_move(types::player_id_t id, Turn &turn_message, const PlaceBomb &) {
     // Get the player's position.
     Position pos = player_positions.at(id);
 
-    Bomb bomb;
+    Bomb bomb{};
     bomb.timer = bomb_timer;
     bomb.position = pos;
 
@@ -313,14 +293,13 @@ void GameServer::apply_player_move(types::player_id_t id, Turn& turn_message, co
     bombs.insert({bomb_counter, bomb});
 
     // Create the event and add it to the turn message.
-    BombPlaced event;
+    BombPlaced event{};
     event.id = bomb_counter++;
     event.position = pos;
-    turn_message.events.push_back(event);
+    turn_message.events.emplace_back(event);
 }
 
-void GameServer::apply_player_move(types::player_id_t id, Turn& turn_message, const PlaceBlock&)
-{
+void GameServer::apply_player_move(types::player_id_t id, Turn &turn_message, const PlaceBlock &) {
     // Get the player's position.
     Position pos = player_positions.at(id);
 
@@ -332,19 +311,17 @@ void GameServer::apply_player_move(types::player_id_t id, Turn& turn_message, co
     blocks.insert(pos);
 
     // Create the event and add it to the turn message.
-    BlockPlaced event;
+    BlockPlaced event{};
     event.position = pos;
-    turn_message.events.push_back(event);
+    turn_message.events.emplace_back(event);
 }
 
-void GameServer::apply_player_move(types::player_id_t id, Turn& turn_message, const Move& move)
-{
+void GameServer::apply_player_move(types::player_id_t id, Turn &turn_message, const Move &move) {
     // Get the player's position.
     Position pos = player_positions.at(id);
 
     types::coord_t dx, dy;
-    switch (move.direction)
-    {
+    switch (move.direction) {
         case Direction::Up:
             dx = 0;
             dy = 1;
@@ -376,22 +353,20 @@ void GameServer::apply_player_move(types::player_id_t id, Turn& turn_message, co
         player_positions.at(id) = pos;
 
         // And add it to the turn message.
-        PlayerMoved event;
+        PlayerMoved event{};
         event.id = id;
         event.position = pos;
-        turn_message.events.push_back(event);
+        turn_message.events.emplace_back(event);
     }
 }
 
-void GameServer::update_blocks()
-{
-    for (const Position& pos : turn_blocks_destroyed) {
+void GameServer::update_blocks() {
+    for (const Position &pos: turn_blocks_destroyed) {
         blocks.erase(pos);
     }
 }
 
-Turn GameServer::apply_moves(MoveContainer& move_container)
-{
+Turn GameServer::apply_moves(MoveContainer &move_container) {
     Turn turn_message;
     std::this_thread::sleep_for(std::chrono::milliseconds(turn_duration));
 
@@ -416,30 +391,28 @@ Turn GameServer::apply_moves(MoveContainer& move_container)
         }
     }
 
-    for (types::player_id_t i = 0; i < scores.size(); i++)
-    {
+    for (types::player_id_t i = 0; i < scores.size(); i++) {
         // Check if the player way destroyed.
         if (turn_robots_destroyed.find(i) != turn_robots_destroyed.end()) {
             // Recreate the player in random position.
-            Position pos;
+            Position pos{};
             pos.x = (types::size_xy_t) (random() % size_x);
             pos.y = (types::size_xy_t) (random() % size_y);
 
             player_positions.at(i) = pos;
 
-            PlayerMoved event;
+            PlayerMoved event{};
             event.id = i;
             event.position = pos;
-            turn_message.events.push_back(event);
-        }
-        else {
+            turn_message.events.emplace_back(event);
+        } else {
             // Handle the player's move.
-            auto [updated, move] = moves.at(i);
+            auto[updated, move] = moves.at(i);
 
             // Check if the move was updated from the last snapshot.
             if (updated) {
                 // Apply player's move.
-                std::visit([&](auto&& arg) {apply_player_move(i, turn_message, arg);}, move);
+                std::visit([&](auto &&arg) { apply_player_move(i, turn_message, arg); }, move);
             }
         }
     }
@@ -451,7 +424,6 @@ Turn GameServer::apply_moves(MoveContainer& move_container)
     return turn_message;
 }
 
-Game::score_map_t GameServer::get_score_map() const
-{
+Game::score_map_t GameServer::get_score_map() const {
     return scores;
 }

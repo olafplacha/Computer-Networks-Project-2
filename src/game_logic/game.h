@@ -11,15 +11,17 @@
 #include "../network/messages.h"
 #include "../concurrency/move_container.h"
 
-class Game
-{
+class Game {
 public:
     using score_map_t = std::map<types::player_id_t, types::score_t>;
 
 protected:
     void decrease_bomb_timers();
-    void find_explosions(const Bomb&);
-    void explode_one_direction(const Position&, types::coord_t, types::coord_t);
+
+    void find_explosions(const Bomb &);
+
+    void explode_one_direction(const Position &, types::coord_t, types::coord_t);
+
     void update_scores();
 
     /* Game settings. */
@@ -48,45 +50,50 @@ protected:
     std::unordered_set<Position, Position::HashFunction> explosions;
 };
 
-class GameClient : public Game
-{
+class GameClient : public Game {
 public:
     /* Create the game based on the messages received from the server. */
-    GameClient(const Hello&, const GameStarted&);
+    GameClient(const Hello &, const GameStarted &);
 
     /* Update game state based on the message received from the server. */
-    void apply_turn(const Turn&);
+    void apply_turn(const Turn &);
 
     /* Get the state of the game. */
     GameMessage get_game_state() const;
 
 private:
-    void apply_event(const BombPlaced&);
-    void apply_event(const BombExploded&);
-    void apply_event(const PlayerMoved&);
-    void apply_event(const BlockPlaced&);
+    void apply_event(const BombPlaced &);
+
+    void apply_event(const BombExploded &);
+
+    void apply_event(const PlayerMoved &);
+
+    void apply_event(const BlockPlaced &);
 };
 
-class GameServer : public Game
-{
+class GameServer : public Game {
 public:
     /*  Create the game based on the provided options. */
-    GameServer(const options_server&);
+    explicit GameServer(const options_server &);
 
     Turn game_init();
 
-    Turn apply_moves(MoveContainer&);
+    Turn apply_moves(MoveContainer &);
+
     score_map_t get_score_map() const;
 
 private:
-    bool is_position_legal(const Position&, types::coord_t, types::coord_t);
-    void handle_exploding_bomb(types::bomb_id_t, Turn&);
-    void handle_player_move(types::player_id_t, const ClientMessage&);
+    bool is_position_legal(const Position &, types::coord_t, types::coord_t);
 
-    void apply_player_move(types::player_id_t, Turn&, const Join&);
-    void apply_player_move(types::player_id_t, Turn&, const PlaceBomb&);
-    void apply_player_move(types::player_id_t, Turn&, const PlaceBlock&);
-    void apply_player_move(types::player_id_t, Turn&, const Move&);
+    void handle_exploding_bomb(types::bomb_id_t, Turn &);
+
+    void apply_player_move(types::player_id_t, Turn &, const Join &);
+
+    void apply_player_move(types::player_id_t, Turn &, const PlaceBomb &);
+
+    void apply_player_move(types::player_id_t, Turn &, const PlaceBlock &);
+
+    void apply_player_move(types::player_id_t, Turn &, const Move &);
 
     void update_blocks();
 

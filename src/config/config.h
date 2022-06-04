@@ -9,8 +9,7 @@ const int TCP_BUFF_SIZE = 65536;
 const int UDP_BUFF_SIZE = 65536;
 const int TCP_BACKLOG_SIZE = 32;
 
-namespace types
-{
+namespace types {
     const int MAX_TYPE_SIZE = 8;
 
     using port_t = uint16_t;
@@ -36,8 +35,7 @@ namespace types
     using coord_t = int64_t;
 }
 
-namespace usage
-{
+namespace usage {
     const std::string CLIENT_USAGE = "-d <GUI_ADDRESS> -n <PLAYER_NAME> -p <PORT> -s <SERVER_ADDRESS>\n";
     const std::string CLIENT_HELP = CLIENT_USAGE + "\nOptions:\n" +
                                     "\t-d\tAddress of GUI: <(host name):(port) or (IPv4):(port) or (IPv6):(port)>.\n" +
@@ -52,8 +50,7 @@ namespace usage
     const std::string SERVER_HELP = SERVER_USAGE + "\nTo be completed...\n";
 }
 
-namespace options
-{
+namespace options {
     // Common.
     const char HELP = 'h';
     const char PORT = 'p';

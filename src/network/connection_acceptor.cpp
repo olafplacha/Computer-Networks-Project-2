@@ -8,8 +8,7 @@
 #include <iostream>
 #include "connection_acceptor.h"
 
-ConnectionAcceptor::ConnectionAcceptor(types::port_t port, int backlog_size)
-{
+ConnectionAcceptor::ConnectionAcceptor(types::port_t port, int backlog_size) {
     int err;
     struct sockaddr_in6 serveraddr;
 
@@ -26,7 +25,7 @@ ConnectionAcceptor::ConnectionAcceptor(types::port_t port, int backlog_size)
     }
 
     // Bind the socket to the specified port.
-    err = bind(socket_fd, (struct sockaddr *)&serveraddr, sizeof(serveraddr));
+    err = bind(socket_fd, (struct sockaddr *) &serveraddr, sizeof(serveraddr));
     if (err != 0) {
         throw TCPAcceptError(gai_strerror(err));
     }
@@ -38,9 +37,8 @@ ConnectionAcceptor::ConnectionAcceptor(types::port_t port, int backlog_size)
     }
 }
 
-int ConnectionAcceptor::accept_another_connection()
-{
-    int new_connection_fd = accept(socket_fd, NULL, NULL);
+int ConnectionAcceptor::accept_another_connection() const {
+    int new_connection_fd = accept(socket_fd, nullptr, nullptr);
     if (new_connection_fd == -1) {
         throw TCPAcceptError(std::strerror(errno));
     }
@@ -56,9 +54,8 @@ int ConnectionAcceptor::accept_another_connection()
     return new_connection_fd;
 }
 
-ConnectionAcceptor::~ConnectionAcceptor()
-{
-    if(close(socket_fd) == -1) {
+ConnectionAcceptor::~ConnectionAcceptor() {
+    if (close(socket_fd) == -1) {
         std::cerr << std::strerror(errno) << std::endl;
         exit(EXIT_FAILURE);
     }

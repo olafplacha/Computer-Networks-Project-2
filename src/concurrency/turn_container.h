@@ -8,24 +8,24 @@
 #include "../network/messages.h"
 #include "../game_logic/game.h"
 
-class TurnContainer
-{
+class TurnContainer {
 public:
     using ptr = std::shared_ptr<TurnContainer>;
 
     TurnContainer() = default;
 
-    void append_new_turn(const Turn&);
+    void append_new_turn(const Turn &);
 
     Turn get_turn(types::turn_t);
 
     Game::score_map_t return_when_game_finished();
 
     /* Let other threads know that the game is finished and pass them the score map. */
-    void mark_the_game_as_finished(const Game::score_map_t&);
+    void mark_the_game_as_finished(const Game::score_map_t &);
 
     /* Delete copy constructor and copy assignment. */
     TurnContainer(TurnContainer const &) = delete;
+
     void operator=(TurnContainer const &) = delete;
 
 private:

@@ -5,8 +5,7 @@
 #include <unistd.h>
 #include "config.h"
 
-struct options_client
-{
+struct options_client {
     std::string gui_address;
     types::port_t gui_port;
     std::string player_name;
@@ -15,8 +14,7 @@ struct options_client
     types::port_t server_port;
 };
 
-struct options_server
-{
+struct options_server {
     types::bomb_timer_t bomb_timer;
     types::players_count_t players_count;
     types::turn_duration_t turn_duration;
@@ -30,7 +28,8 @@ struct options_server
     types::size_xy_t size_y;
 };
 
-options_client parse_client(int argc, char* argv[]);
-options_server parse_server(int argc, char* argv[]);
+options_client parse_client(int argc, char *argv[]);
+
+options_server parse_server(int argc, char *argv[]);
 
 #endif // PARSER_H

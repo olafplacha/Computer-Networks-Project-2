@@ -8,18 +8,16 @@
 #include "../config/config.h"
 #include "../network/messages.h"
 
-class RejectedPlayerException : public std::logic_error
-{
+class RejectedPlayerException : public std::logic_error {
 public:
-    RejectedPlayerException(const char *w) : std::logic_error(w) {}
+    explicit RejectedPlayerException(const char *w) : std::logic_error(w) {}
 };
 
-class AcceptedPlayerContainer
-{
+class AcceptedPlayerContainer {
 public:
     using ptr = std::shared_ptr<AcceptedPlayerContainer>;
 
-    AcceptedPlayerContainer(types::players_count_t);
+    explicit AcceptedPlayerContainer(types::players_count_t);
 
     /* Return when enough players join, so that the game can be started. It returns no sooner than the game starts. */
     GameStarted return_when_target_players_joined();
@@ -31,11 +29,12 @@ public:
      */
     types::player_id_t add_new_player(const Player &);
 
-    /* Return message about specific accpted player when it is ready. */
+    /* Return message about specific accepted player when it is ready. */
     AcceptedPlayer get_accepted_player(types::player_id_t);
 
     /* Delete copy constructor and copy assignment. */
     AcceptedPlayerContainer(AcceptedPlayerContainer const &) = delete;
+
     void operator=(AcceptedPlayerContainer const &) = delete;
 
 private:

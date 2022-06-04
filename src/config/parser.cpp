@@ -1,13 +1,11 @@
 #include <iostream>
-#include <set>
 #include <string>
 #include <limits>
 #include <chrono>
 #include "parser.h"
 #include "config.h"
 
-struct required_client
-{
+struct required_client {
     bool gui_address = true;
     bool gui_port = true;
     bool player_name = true;
@@ -16,8 +14,7 @@ struct required_client
     bool server_port = true;
 };
 
-struct required_server
-{
+struct required_server {
     bool bomb_timer = true;
     bool players_count = true;
     bool turn_duration = true;
@@ -31,8 +28,7 @@ struct required_server
     bool size_y = true;
 };
 
-static bool required_specified_client(const required_client &required)
-{
+static bool required_specified_client(const required_client &required) {
     bool result = !required.gui_address &&
                   !required.gui_port &&
                   !required.player_name &&
@@ -43,8 +39,7 @@ static bool required_specified_client(const required_client &required)
     return result;
 }
 
-static bool required_specified_server(const required_server &required)
-{
+static bool required_specified_server(const required_server &required) {
     bool result = !required.bomb_timer &&
                   !required.players_count &&
                   !required.turn_duration &&
@@ -60,62 +55,51 @@ static bool required_specified_server(const required_server &required)
     return result;
 }
 
-static void exit_wrong_param(std::string program, const std::string &usage)
-{
+static void exit_wrong_param(std::string program, const std::string &usage) {
     std::cerr << "Usage: " << program << " " << usage;
     exit(EXIT_FAILURE);
 }
 
-static void exit_help(std::string program, const std::string &help_message)
-{
+static void exit_help(std::string program, const std::string &help_message) {
     std::cerr << "Usage: " << program << " " << help_message;
     exit(EXIT_SUCCESS);
 }
 
-static void validate_limit(uint64_t val, uint64_t limit, const std::string &message)
-{
-    if (val > limit)
-    {
+static void validate_limit(uint64_t val, uint64_t limit, const std::string &message) {
+    if (val > limit) {
         std::cerr << message << " out of range! Should not be greater than " << limit << ".\n";
         exit(EXIT_FAILURE);
     }
 }
 
-static uint64_t get_numerical_value(const char *s, const std::string &message)
-{
+static uint64_t get_numerical_value(const char *s, const std::string &message) {
     char *tmp;
     uint64_t res = strtoll(s, &tmp, 10);
-    if (errno == ERANGE || *tmp != '\0')
-    {
+    if (errno == ERANGE || *tmp != '\0') {
         std::cerr << message << " value not parsable!\n";
         exit(EXIT_FAILURE);
     }
     return res;
 }
 
-template <typename T>
-static T parse_numerical(const char *s, std::string &&message)
-{
-    if (s[0] == '\0')
-    {
+template<typename T>
+static T parse_numerical(const char *s, std::string &&message) {
+    if (s[0] == '\0') {
         std::cerr << message << " cannot be parsed!\n";
         exit(EXIT_FAILURE);
     }
-    if (s[0] == '-')
-    {
+    if (s[0] == '-') {
         std::cerr << message << " cannot be negative!\n";
         exit(EXIT_FAILURE);
     }
     uint64_t t = get_numerical_value(s, message);
     validate_limit(t, std::numeric_limits<T>::max(), message);
-    return (T)t;
+    return (T) t;
 }
 
-static void parse_address(std::string &addr, types::port_t& port, std::string s, std::string &&message)
-{
+static void parse_address(std::string &addr, types::port_t &port, std::string s, std::string &&message) {
     auto pos = s.find_last_of(options::ADDRESS_DELIMITER);
-    if (pos == std::string::npos)
-    {
+    if (pos == std::string::npos) {
         std::cerr << message << " address cannot be parsed!\n";
         exit(EXIT_FAILURE);
     }
@@ -123,8 +107,7 @@ static void parse_address(std::string &addr, types::port_t& port, std::string s,
     port = parse_numerical<types::port_t>(s.substr(pos + 1).c_str(), message + " port");
 }
 
-options_client parse_client(int argc, char *argv[])
-{
+options_client parse_client(int argc, char *argv[]) {
     options_client options;
     required_client required;
 
@@ -132,11 +115,9 @@ options_client parse_client(int argc, char *argv[])
     int counter = 1;
 
     int opt;
-    while ((opt = getopt(argc, argv, options::CLIENT_OPTSTRING)) != -1)
-    {
+    while ((opt = getopt(argc, argv, options::CLIENT_OPTSTRING)) != -1) {
         counter += 2;
-        switch (opt)
-        {
+        switch (opt) {
             case options::GUI_ADDRESS:
                 parse_address(options.gui_address, options.gui_port, optarg, "GUI");
                 required.gui_address = false;
@@ -164,16 +145,14 @@ options_client parse_client(int argc, char *argv[])
     }
 
     // Check if all required parameters have been specified.
-    if (argc != counter || !required_specified_client(required))
-    {
+    if (argc != counter || !required_specified_client(required)) {
         exit_wrong_param(argv[0], usage::CLIENT_USAGE);
     }
 
     return options;
 }
 
-options_server parse_server(int argc, char *argv[])
-{
+options_server parse_server(int argc, char *argv[]) {
     options_server options;
     required_server required;
 
@@ -184,11 +163,9 @@ options_server parse_server(int argc, char *argv[])
     int counter = 1;
 
     int opt;
-    while ((opt = getopt(argc, argv, options::SERVER_OPTSTRING)) != -1)
-    {
+    while ((opt = getopt(argc, argv, options::SERVER_OPTSTRING)) != -1) {
         counter += 2;
-        switch (opt)
-        {
+        switch (opt) {
             case options::BOMB_TIMER:
                 options.bomb_timer = parse_numerical<types::bomb_timer_t>(optarg, "Bomb timer");
                 required.bomb_timer = false;
@@ -242,8 +219,7 @@ options_server parse_server(int argc, char *argv[])
     }
 
     // Check if all required parameters have been specified.
-    if (argc != counter || !required_specified_server(required))
-    {
+    if (argc != counter || !required_specified_server(required)) {
         exit_wrong_param(argv[0], usage::SERVER_USAGE);
     }
 

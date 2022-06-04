@@ -3,8 +3,6 @@
 #include <set>
 #include <thread>
 #include <csignal>
-#include <vector>
-#include <chrono>
 #include <shared_mutex>
 #include "network/connection_acceptor.h"
 #include "network/network_handler.h"
@@ -16,13 +14,12 @@
 #include "concurrency/turn_container.h"
 #include "game_logic/game.h"
 
-typedef std::unique_lock<std::shared_mutex>  WriteLock;
-typedef std::shared_lock<std::shared_mutex>  ReadLock;
+typedef std::unique_lock<std::shared_mutex> WriteLock;
+typedef std::shared_lock<std::shared_mutex> ReadLock;
 
 options_server settings;
 
-struct shared_state
-{
+struct shared_state {
     std::shared_mutex mutex;
     bool game_started;
     size_t game_version;
@@ -31,8 +28,7 @@ struct shared_state
     TurnContainer::ptr turn_container;
 } shared;
 
-void reset_shared()
-{
+void reset_shared() {
     WriteLock lock_guard(shared.mutex);
     shared.game_started = false;
     shared.game_version++;
@@ -41,21 +37,18 @@ void reset_shared()
     shared.turn_container = std::make_shared<TurnContainer>();
 }
 
-bool is_game_started()
-{
+bool is_game_started() {
     // Here the lock is used only to introduce the happens-before relationship.
     ReadLock lock_guard(shared.mutex);
     return shared.game_started;
 }
 
-bool is_game_valid(size_t version)
-{
+bool is_game_valid(size_t version) {
     ReadLock lock_guard(shared.mutex);
     return shared.game_version == version;
 }
 
-void handle_tcp_stream_in(ServerMessageManager::ptr manager)
-{
+void handle_tcp_stream_in(ServerMessageManager::ptr manager) {
     ClientMessage msg;
 
     // Pointers to shared data structures.
@@ -91,27 +84,22 @@ void handle_tcp_stream_in(ServerMessageManager::ptr manager)
             }
 
             if (std::holds_alternative<Join>(msg)) {
-                if (!joined_the_game)
-                {
+                if (!joined_the_game) {
                     Player player;
                     player.name = std::get<Join>(msg).name;
                     player.address = manager->get_client_name();
 
-                    try
-                    {
+                    try {
                         player_id = accepted_players->add_new_player(player);
                         joined_the_game = true;
                     }
-                    catch(const RejectedPlayerException& e)
-                    {
+                    catch (const RejectedPlayerException &e) {
                         // The client was rejected from joining the game.
                     }
-                }
-                else {
+                } else {
                     // The client already joined the game!
                 }
-            }
-            else {
+            } else {
                 if (joined_the_game && is_game_started()) {
                     // Proceed only if the client joined the most recent version of the game and the game is underway.
                     move_container->update_slot(player_id, msg);
@@ -119,18 +107,15 @@ void handle_tcp_stream_in(ServerMessageManager::ptr manager)
             }
         }
     }
-    catch (const std::exception& e)
-    {
+    catch (const std::exception &e) {
         // Communication with the client failed.
         std::cerr << e.what() << '\n';
         return;
     }
 }
 
-void handle_tcp_stream_out(ServerMessageManager::ptr manager)
-{
-    try
-    {
+void handle_tcp_stream_out(ServerMessageManager::ptr manager) {
+    try {
         Hello hello_message(settings);
         manager->send_client_message(hello_message);
 
@@ -147,8 +132,7 @@ void handle_tcp_stream_out(ServerMessageManager::ptr manager)
 
             if (!is_game_started()) {
                 // Show accepted players.
-                for (types::player_id_t i = 0; i < settings.players_count; i++)
-                {
+                for (types::player_id_t i = 0; i < settings.players_count; i++) {
                     AcceptedPlayer message = accepted_players->get_accepted_player(i);
                     manager->send_client_message(message);
                 }
@@ -158,8 +142,7 @@ void handle_tcp_stream_out(ServerMessageManager::ptr manager)
             GameStarted message = accepted_players->return_when_target_players_joined();
             manager->send_client_message(message);
 
-            for (types::turn_t i = 0; i < settings.game_length + 1; i++)
-            {
+            for (types::turn_t i = 0; i < settings.game_length + 1; i++) {
                 // Wait for each turn to complete and send it.
                 Turn message = turn_container->get_turn(i);
                 manager->send_client_message(message);
@@ -172,23 +155,19 @@ void handle_tcp_stream_out(ServerMessageManager::ptr manager)
             manager->send_client_message(message_end);
         }
     }
-    catch (const std::exception& e)
-    {
+    catch (const std::exception &e) {
         // Communication with the client failed.
         std::cerr << e.what() << '\n';
         return;
     }
 }
 
-void accept_new_connections(types::port_t port)
-{
+void accept_new_connections(types::port_t port) {
     ConnectionAcceptor acceptor(port, TCP_BACKLOG_SIZE);
 
-    while (true)
-    {
+    while (true) {
         // Accept another connection.
-        try
-        {
+        try {
             std::cout << "Open for new connection\n";
 
             // Wait for another connection request.
@@ -199,31 +178,28 @@ void accept_new_connections(types::port_t port)
             ServerMessageManager::ptr manager = std::make_shared<ServerMessageManager>(handler);
 
             // Create two threads for data streaming in and out of the server.
-            std::thread thread_in{[=]{ handle_tcp_stream_in(manager); }};
-            std::thread thread_out{[=]{ handle_tcp_stream_out(manager); }};
+            std::thread thread_in{[=] { handle_tcp_stream_in(manager); }};
+            std::thread thread_out{[=] { handle_tcp_stream_out(manager); }};
             thread_in.detach();
             thread_out.detach();
 
             std::cout << "New connection established\n";
         }
-        catch(const TCPAcceptError& e)
-        {
+        catch (const TCPAcceptError &e) {
             // Continue execution.
             std::cerr << e.what() << '\n';
         }
     }
 }
 
-int main(int argc, char* argv[])
-{
+int main(int argc, char *argv[]) {
     settings = parse_server(argc, argv);
     reset_shared();
 
     // Create thread for accepting new connection.
-    std::thread thread_acceptor{[=]{ accept_new_connections(settings.port); }};
+    std::thread thread_acceptor{[=] { accept_new_connections(settings.port); }};
 
-    while (true)
-    {
+    while (true) {
         AcceptedPlayerContainer::ptr accepted_players;
         MoveContainer::ptr move_container;
         TurnContainer::ptr turn_container;
@@ -249,8 +225,7 @@ int main(int argc, char* argv[])
         turn_container->append_new_turn(turn);
 
         // Carry out all the turns.
-        for (types::turn_t i = 0; i < settings.game_length; i++)
-        {
+        for (types::turn_t i = 0; i < settings.game_length; i++) {
             turn = game.apply_moves(*move_container);
             turn_container->append_new_turn(turn);
         }
@@ -265,6 +240,7 @@ int main(int argc, char* argv[])
         turn_container->mark_the_game_as_finished(score_map);
     }
 
+    // Unreachable.
     thread_acceptor.join();
 
     return 0;

@@ -3,8 +3,7 @@
 
 #include "../network/messages.h"
 
-class Lobby
-{
+class Lobby {
 protected:
     std::string server_name;
     types::players_count_t players_count;
@@ -16,17 +15,16 @@ protected:
     std::map<types::player_id_t, Player> players;
 };
 
-class LobbyClient : public Lobby
-{
+class LobbyClient : public Lobby {
 public:
     /* Instantiate Lobby based on the first message from the server. */
-    LobbyClient(const Hello &);
+    explicit LobbyClient(const Hello &);
 
     /* Change Lobby's state when a new player is accepted */
     void accept(const AcceptedPlayer &);
 
     /* Get the state of the lobby. */
-    LobbyMessage get_lobby_state() const;
+    [[nodiscard]] LobbyMessage get_lobby_state() const;
 };
 
 #endif // LOBBY_H

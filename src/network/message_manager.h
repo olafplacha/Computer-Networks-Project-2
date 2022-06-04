@@ -1,11 +1,10 @@
-#ifndef MESSAGE_MANAGER
-#define MESSAGE_MANAGER
+#ifndef MESSAGE_MANAGER_H
+#define MESSAGE_MANAGER_H
 
 #include "network_handler.h"
 #include "messages.h"
 
-class ClientMessageManager
-{
+class ClientMessageManager {
 public:
     ClientMessageManager(TCPHandler &, UDPHandler &);
 
@@ -15,19 +14,26 @@ public:
      * @return ServerMessage Message from the server.
      */
     ServerMessage read_server_message();
+
     InputMessage read_gui_message();
 
     void send_server_message(const Join &);
+
     void send_server_message(const PlaceBomb &);
+
     void send_server_message(const PlaceBlock &);
+
     void send_server_message(const Move &);
+
     void send_server_message(const InvalidMessage &);
 
     void send_gui_message(LobbyMessage &&);
+
     void send_gui_message(GameMessage &&);
 
     /* Delete copy constructor and copy assignment. */
     ClientMessageManager(ClientMessageManager const &) = delete;
+
     void operator=(ClientMessageManager const &) = delete;
 
 private:
@@ -35,29 +41,33 @@ private:
     UDPHandler &udp_handler;
 };
 
-class ServerMessageManager
-{
+class ServerMessageManager {
 public:
     using ptr = std::shared_ptr<ServerMessageManager>;
 
-    ServerMessageManager(TCPHandler::ptr &);
+    explicit ServerMessageManager(TCPHandler::ptr &);
 
     ClientMessage read_client_message();
 
     void send_client_message(const Hello &);
+
     void send_client_message(const AcceptedPlayer &);
+
     void send_client_message(const GameStarted &);
+
     void send_client_message(const Turn &);
+
     void send_client_message(const GameEnded &);
 
-    std::string get_client_name() const;
+    [[nodiscard]] std::string get_client_name() const;
 
     /* Delete copy constructor and copy assignment. */
     ServerMessageManager(ServerMessageManager const &) = delete;
+
     void operator=(ServerMessageManager const &) = delete;
 
 private:
     TCPHandler::ptr tcp_handler;
 };
 
-#endif // MESSAGES_H
+#endif // MESSAGE_MANAGER_H

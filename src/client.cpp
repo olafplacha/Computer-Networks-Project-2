@@ -1,12 +1,6 @@
 #include <iostream>
-#include <limits>
 #include <map>
 #include <string>
-#include <arpa/inet.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netdb.h>
-#include <cstring>
 #include <thread>
 #include <atomic>
 
@@ -16,14 +10,14 @@
 #include "game_logic/game.h"
 #include "network/message_manager.h"
 
-enum State { LOBBY, GAME };
+enum State {
+    LOBBY, GAME
+};
 std::atomic<State> state;
 std::atomic<bool> join_sent;
 
-void guiClientServerStream(ClientMessageManager& manager, std::string& player_name)
-{
-    try
-    {
+void guiClientServerStream(ClientMessageManager &manager, std::string &player_name) {
+    try {
         Join join(player_name);
 
         while (true) {
@@ -36,24 +30,21 @@ void guiClientServerStream(ClientMessageManager& manager, std::string& player_na
                 // Send a request to join the game.
                 manager.send_server_message(join);
                 join_sent = true;
-            }
-            else {
+            } else {
                 // Send next instruction input to the server.
-                std::visit([&](auto&& arg) {
+                std::visit([&](auto &&arg) {
                     manager.send_server_message(arg);
                 }, message);
             }
         }
     }
-    catch(const std::exception& e)
-    {
+    catch (const std::exception &e) {
         std::cerr << e.what() << '\n';
         exit(EXIT_FAILURE);
     }
 }
 
-void serverClientGuiStream(ClientMessageManager& manager)
-{
+void serverClientGuiStream(ClientMessageManager &manager) {
     try {
         ServerMessage message;
         message = manager.read_server_message();
@@ -73,16 +64,14 @@ void serverClientGuiStream(ClientMessageManager& manager)
                 if (std::holds_alternative<GameStarted>(message)) {
                     // Start the game!
                     state = GAME;
-                }
-                else if (std::holds_alternative<AcceptedPlayer>(message)) {
+                } else if (std::holds_alternative<AcceptedPlayer>(message)) {
                     // Another player joined!
                     AcceptedPlayer player = std::get<AcceptedPlayer>(message);
                     lobby.accept(player);
                     // Send it tu gui.
                     manager.send_gui_message(lobby.get_lobby_state());
-                }
-                else {
-                    std::runtime_error("Forbidden message received while in the lobby!");
+                } else {
+                    throw std::runtime_error("Forbidden message received while in the lobby!");
                 }
             }
 
@@ -96,8 +85,7 @@ void serverClientGuiStream(ClientMessageManager& manager)
                     // The game ended!
                     state = LOBBY;
                     join_sent = false;
-                }
-                else if (std::holds_alternative<Turn>(message)) {
+                } else if (std::holds_alternative<Turn>(message)) {
                     Turn turn = std::get<Turn>(message);
                     game.apply_turn(turn);
                     // Get the same state and send it to gui.
@@ -106,15 +94,13 @@ void serverClientGuiStream(ClientMessageManager& manager)
             }
         }
     }
-    catch(const std::exception& e)
-    {
+    catch (const std::exception &e) {
         std::cerr << e.what() << '\n';
         exit(EXIT_FAILURE);
     }
 }
 
-int main(int argc, char* argv[])
-{
+int main(int argc, char *argv[]) {
     // Parse program arguments.
     options_client op = parse_client(argc, argv);
 
@@ -128,8 +114,8 @@ int main(int argc, char* argv[])
     join_sent = false;
 
     // Create threads for (gui -> client -> server) and (server -> client -> gui) communication.
-    std::thread t0{[&manager, &op]{ guiClientServerStream(manager, op.player_name); }};
-    std::thread t1{[&manager]{ serverClientGuiStream(manager); }};
+    std::thread t0{[&manager, &op] { guiClientServerStream(manager, op.player_name); }};
+    std::thread t1{[&manager] { serverClientGuiStream(manager); }};
 
     t0.join();
     t1.join();

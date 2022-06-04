@@ -12,24 +12,25 @@
 
 #include <deque>
 #include <string>
-#include <inttypes.h>
+#include <cinttypes>
 #include <iostream>
 #include <stdexcept>
 #include <cstring>
 #include <memory>
 #include "../config/config.h"
 
-void convert_network_to_host_byte_order(uint8_t* buffer, size_t n);
-void convert_host_to_network_byte_order(uint8_t* buffer, size_t n);
+void convert_network_to_host_byte_order(uint8_t *buffer, size_t n);
 
-class TCPError: public std::runtime_error {
+void convert_host_to_network_byte_order(uint8_t *buffer, size_t n);
+
+class TCPError : public std::runtime_error {
 public:
-    TCPError(const char* w) : std::runtime_error(w) {}
+    explicit TCPError(const char *w) : std::runtime_error(w) {}
 };
 
-class UDPError: public std::runtime_error {
+class UDPError : public std::runtime_error {
 public:
-    UDPError(const char* w) : std::runtime_error(w) {}
+    explicit UDPError(const char *w) : std::runtime_error(w) {}
 };
 
 class NetworkHandler {
@@ -39,9 +40,9 @@ public:
     ~NetworkHandler();
 
 protected:
-    uint8_t* recv_buff;
+    uint8_t *recv_buff;
     size_t recv_buff_size;
-    uint8_t* send_buff;
+    uint8_t *send_buff;
     size_t send_buff_size;
 
     /**
@@ -50,7 +51,7 @@ protected:
      * @param n Size of the buffer.
      * @return uint8_t* Pointer to the buffer.
      */
-    uint8_t* allocate_buffer_space(size_t n);
+    static uint8_t *allocate_buffer_space(size_t n);
 };
 
 /**
@@ -62,6 +63,7 @@ protected:
 class TCPHandler : public NetworkHandler {
 public:
     using ptr = std::shared_ptr<TCPHandler>;
+
     /**
      * @brief Construct a new TCPHandler object using previously created socket.
      *
@@ -77,9 +79,9 @@ public:
      * @param port Port of the server.
      * @param buff_size_ Size of the receive/send buffers.
      */
-    TCPHandler(std::string& address, types::port_t port, size_t buff_size_);
+    TCPHandler(std::string &address, types::port_t port, size_t buff_size_);
 
-    std::string get_peer_name() const;
+    [[nodiscard]] std::string get_peer_name() const;
 
     ~TCPHandler();
 
@@ -93,7 +95,7 @@ public:
      * @param buff Pointer to buffer of size at least n in which read bytes are returned.
      * @throws TCPError.
      */
-    template <typename T>
+    template<typename T>
     T read_element();
 
     // Send element over TCP connection.
@@ -101,8 +103,9 @@ public:
     void send_element(T element);
 
     // Delete copy constructor and copy assignment.
-    TCPHandler(TCPHandler const&) = delete;
-    void operator=(TCPHandler const&) = delete;
+    TCPHandler(TCPHandler const &) = delete;
+
+    void operator=(TCPHandler const &) = delete;
 
 private:
     int socket_fd;
@@ -115,7 +118,7 @@ private:
      * @param port Port of the server.
      * @return int File descriptor of the connected socket.
      */
-    int set_up_tcp_connection(std::string& address, types::port_t port);
+    static int set_up_tcp_connection(std::string &address, types::port_t port);
 
     /**
      * @brief Reads from the TCP stream as long as there are not enough bytes in recv_deque.
@@ -125,7 +128,7 @@ private:
      */
     void return_when_n_bytes_in_deque(size_t n);
 
-    void send_n_bytes(size_t n, uint8_t* buff);
+    void send_n_bytes(size_t n, uint8_t *buff) const;
 };
 
 class UDPHandler : public NetworkHandler {
@@ -138,7 +141,7 @@ public:
      * @param send_port Port of host to which UDP packets are sent.
      * @param buff_size_ Size of the receive/send buffers.
      */
-    UDPHandler(types::port_t recv_port, std::string send_address, types::port_t send_port,
+    UDPHandler(types::port_t recv_port, const std::string &send_address, types::port_t send_port,
                size_t buff_size_);
 
     ~UDPHandler();
@@ -166,8 +169,9 @@ public:
     void flush_outcoming_packet();
 
     // Delete copy constructor and copy assignment.
-    UDPHandler(UDPHandler const&) = delete;
-    void operator=(UDPHandler const&) = delete;
+    UDPHandler(UDPHandler const &) = delete;
+
+    void operator=(UDPHandler const &) = delete;
 
 private:
     int recv_socket_fd;
@@ -175,9 +179,9 @@ private:
     // Size of the last received UDP packet.
     size_t packet_size;
     // Keeps track of the next element of the packet to be read.
-    uint8_t* recv_pointer;
+    uint8_t *recv_pointer;
     // Keeps track of free space in the send buffer.
-    uint8_t* send_pointer;
+    uint8_t *send_pointer;
 
     /**
      * @brief Open a socket for reading UDP packets.
@@ -185,7 +189,7 @@ private:
      * @param port Port on which UDP packets are read.
      * @return int File descriptor of the UDP socket.
      */
-    int set_up_udp_listening(types::port_t port);
+    static int set_up_udp_listening(types::port_t port);
 
     /**
      * @brief Open a socket for sending UDP packets and bind it to the provided address.
@@ -194,18 +198,16 @@ private:
      * @param port Port of the host to which UDP packets will be sent.
      * @return int File descriptor of the UDP socket.
      */
-    int set_up_udp_sending(std::string address, types::port_t port);
+    static int set_up_udp_sending(const std::string &address, types::port_t port);
 };
 
 template<typename T>
-T TCPHandler::read_element()
-{
+T TCPHandler::read_element() {
     size_t n = sizeof(T);
     return_when_n_bytes_in_deque(n);
     // At this point there are at least n bytes in the deque.
     uint8_t temp_buff[n];
-    for (size_t i = 0; i < n; i++)
-    {
+    for (size_t i = 0; i < n; i++) {
         // Copy n bytes from the deque to the buffer.
         temp_buff[i] = recv_deque.front();
         recv_deque.pop_front();
@@ -217,8 +219,7 @@ T TCPHandler::read_element()
 }
 
 template<typename T>
-void TCPHandler::send_element(T element)
-{
+void TCPHandler::send_element(T element) {
     // Put the bytes into the send buffer.
     std::memcpy(send_buff, &element, sizeof(T));
 
@@ -229,8 +230,7 @@ void TCPHandler::send_element(T element)
 }
 
 template<typename T>
-T UDPHandler::read_next_packet_element()
-{
+T UDPHandler::read_next_packet_element() {
     // Check if there is enough data left in the buffer.
     if (recv_buff + packet_size < recv_pointer + sizeof(T)) {
         throw UDPError("Attemp to read data out of UDP packet's bound!");

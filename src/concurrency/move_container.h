@@ -9,21 +9,21 @@
 #include "../config/config.h"
 #include "../network/messages.h"
 
-class MoveContainer
-{
+class MoveContainer {
 public:
     /* Holds information about the last move and whether it was updated from the last snapshot. */
     using ptr = std::shared_ptr<MoveContainer>;
     using container_t = std::vector<std::pair<bool, ClientMessage>>;
 
-    MoveContainer(types::players_count_t);
+    explicit MoveContainer(types::players_count_t);
 
     container_t atomic_snapshot_and_clear();
 
-    void update_slot(types::player_id_t, const ClientMessage&);
+    void update_slot(types::player_id_t, const ClientMessage &);
 
     /* Delete copy constructor and copy assignment. */
     MoveContainer(MoveContainer const &) = delete;
+
     void operator=(MoveContainer const &) = delete;
 
 private:

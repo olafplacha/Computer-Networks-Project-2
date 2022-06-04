@@ -10,31 +10,42 @@
 #include "network_handler.h"
 #include "../config/parser.h"
 
-enum class Direction : std::underlying_type_t<std::byte> { Up, Right, Down, Left };
+enum class Direction : std::underlying_type_t<std::byte> {
+    Up, Right, Down, Left
+};
 
 struct Join {
     std::string name;
 
     Join() = default;
-    Join(std::string&);
-    Join(TCPHandler&);
-    void serialize(TCPHandler&) const;
+
+    explicit Join(std::string &);
+
+    explicit Join(TCPHandler &);
+
+    void serialize(TCPHandler &) const;
 };
 
-struct PlaceBomb  {};
+struct PlaceBomb {
+};
 
-struct PlaceBlock {};
+struct PlaceBlock {
+};
 
 struct Move {
     Direction direction;
 
     Move() = default;
-    Move(Direction direction_);
-    Move(TCPHandler&);
-    void serialize(TCPHandler&) const;
+
+    explicit Move(Direction direction_);
+
+    explicit Move(TCPHandler &);
+
+    void serialize(TCPHandler &) const;
 };
 
-struct InvalidMessage {};
+struct InvalidMessage {
+};
 
 struct Hello {
     std::string server_name;
@@ -46,9 +57,12 @@ struct Hello {
     types::bomb_timer_t bomb_timer;
 
     Hello() = default;
-    Hello(const options_server&);
-    Hello(TCPHandler& handler);
-    void serialize(TCPHandler&) const;
+
+    explicit Hello(const options_server &);
+
+    explicit Hello(TCPHandler &handler);
+
+    void serialize(TCPHandler &) const;
 };
 
 struct Player {
@@ -56,9 +70,12 @@ struct Player {
     std::string address;
 
     Player() = default;
-    Player(TCPHandler&);
-    void serialize(UDPHandler&) const;
-    void serialize(TCPHandler&) const;
+
+    explicit Player(TCPHandler &);
+
+    void serialize(UDPHandler &) const;
+
+    void serialize(TCPHandler &) const;
 };
 
 struct AcceptedPlayer {
@@ -66,16 +83,20 @@ struct AcceptedPlayer {
     Player player;
 
     AcceptedPlayer() = default;
-    AcceptedPlayer(TCPHandler&);
-    void serialize(TCPHandler&) const;
+
+    explicit AcceptedPlayer(TCPHandler &);
+
+    void serialize(TCPHandler &) const;
 };
 
 struct GameStarted {
     std::map<types::player_id_t, Player> players;
 
     GameStarted() = default;
-    GameStarted(TCPHandler&);
-    void serialize(TCPHandler&) const;
+
+    explicit GameStarted(TCPHandler &);
+
+    void serialize(TCPHandler &) const;
 };
 
 struct Position {
@@ -83,17 +104,17 @@ struct Position {
     types::size_xy_t y;
 
     Position() = default;
-    Position(TCPHandler&);
 
-    bool operator==(const Position&) const;
+    explicit Position(TCPHandler &);
 
-    void serialize(UDPHandler&) const;
-    void serialize(TCPHandler&) const;
+    bool operator==(const Position &) const;
 
-    struct HashFunction
-    {
-        size_t operator()(const Position& p) const
-        {
+    void serialize(UDPHandler &) const;
+
+    void serialize(TCPHandler &) const;
+
+    struct HashFunction {
+        size_t operator()(const Position &p) const {
             size_t xHash = std::hash<int>()(p.x);
             size_t yHash = std::hash<int>()(p.y) << 1;
             return xHash ^ yHash;
@@ -106,8 +127,10 @@ struct BombPlaced {
     Position position;
 
     BombPlaced() = default;
-    BombPlaced(TCPHandler& handler);
-    void serialize(TCPHandler&) const;
+
+    explicit BombPlaced(TCPHandler &handler);
+
+    void serialize(TCPHandler &) const;
 };
 
 struct BombExploded {
@@ -116,8 +139,10 @@ struct BombExploded {
     std::vector<Position> blocks_destroyed;
 
     BombExploded() = default;
-    BombExploded(TCPHandler& handler);
-    void serialize(TCPHandler&) const;
+
+    explicit BombExploded(TCPHandler &handler);
+
+    void serialize(TCPHandler &) const;
 };
 
 struct PlayerMoved {
@@ -125,16 +150,20 @@ struct PlayerMoved {
     Position position;
 
     PlayerMoved() = default;
-    PlayerMoved(TCPHandler& handler);
-    void serialize(TCPHandler&) const;
+
+    explicit PlayerMoved(TCPHandler &handler);
+
+    void serialize(TCPHandler &) const;
 };
 
 struct BlockPlaced {
     Position position;
 
     BlockPlaced() = default;
-    BlockPlaced(TCPHandler& handler);
-    void serialize(TCPHandler&) const;
+
+    explicit BlockPlaced(TCPHandler &handler);
+
+    void serialize(TCPHandler &) const;
 };
 
 using Event = std::variant<BombPlaced, BombExploded, PlayerMoved, BlockPlaced>;
@@ -144,23 +173,27 @@ struct Turn {
     std::vector<Event> events;
 
     Turn() = default;
-    Turn(TCPHandler& handler);
-    void serialize(TCPHandler&) const;
+
+    explicit Turn(TCPHandler &handler);
+
+    void serialize(TCPHandler &) const;
 };
 
 struct GameEnded {
     std::map<types::player_id_t, types::score_t> scores;
 
     GameEnded() = default;
-    GameEnded(TCPHandler& handler);
-    void serialize(TCPHandler&) const;
+
+    explicit GameEnded(TCPHandler &handler);
+
+    void serialize(TCPHandler &) const;
 };
 
 struct Bomb {
     Position position;
     types::bomb_timer_t timer;
 
-    void serialize(UDPHandler&) const;
+    void serialize(UDPHandler &) const;
 };
 
 struct LobbyMessage {
@@ -173,7 +206,7 @@ struct LobbyMessage {
     types::bomb_timer_t bomb_timer;
     std::map<types::player_id_t, Player> players;
 
-    void serialize(UDPHandler&) const;
+    void serialize(UDPHandler &) const;
 };
 
 struct GameMessage {
@@ -189,7 +222,7 @@ struct GameMessage {
     std::vector<Position> explosions;
     std::map<types::player_id_t, types::score_t> scores;
 
-    void serialize(UDPHandler&) const;
+    void serialize(UDPHandler &) const;
 };
 
 /* Codes of messages sent from client to server. */

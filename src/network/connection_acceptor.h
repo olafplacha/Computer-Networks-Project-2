@@ -4,13 +4,12 @@
 #include <stdexcept>
 #include "../config/config.h"
 
-class TCPAcceptError: public std::runtime_error {
+class TCPAcceptError : public std::runtime_error {
 public:
-    TCPAcceptError(const char* w) : std::runtime_error(w) {}
+    explicit TCPAcceptError(const char *w) : std::runtime_error(w) {}
 };
 
-class ConnectionAcceptor
-{
+class ConnectionAcceptor {
 public:
     ConnectionAcceptor(types::port_t port, int backlog_size);
 
@@ -19,13 +18,14 @@ public:
      * 
      * @return int Socket of the new TCP connection.
      */
-    int accept_another_connection();
+    [[nodiscard]] int accept_another_connection() const;
 
     ~ConnectionAcceptor();
 
     // Delete copy constructor and copy assignment.
-    ConnectionAcceptor(ConnectionAcceptor const&) = delete;
-    void operator=(ConnectionAcceptor const&) = delete;
+    ConnectionAcceptor(ConnectionAcceptor const &) = delete;
+
+    void operator=(ConnectionAcceptor const &) = delete;
 
 private:
     int socket_fd;

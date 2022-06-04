@@ -6,8 +6,8 @@
 #include <condition_variable>
 #include <mutex>
 #include <memory>
-#include "config.h"
-#include "messages.h"
+#include "../config/config.h"
+#include "../network/messages.h"
 
 class MoveContainer
 {

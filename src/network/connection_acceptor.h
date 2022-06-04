@@ -2,7 +2,7 @@
 #define CONNECTION_ACCEPTOR_H
 
 #include <stdexcept>
-#include "config.h"
+#include "../config/config.h"
 
 class TCPAcceptError: public std::runtime_error {
 public:

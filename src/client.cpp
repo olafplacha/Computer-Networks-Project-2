@@ -10,11 +10,11 @@
 #include <thread>
 #include <atomic>
 
-#include "config.h"
-#include "parser.h"
-#include "lobby.h"
-#include "game.h"
-#include "message_manager.h"
+#include "config/config.h"
+#include "config/parser.h"
+#include "game_logic/lobby.h"
+#include "game_logic/game.h"
+#include "network/message_manager.h"
 
 enum State { LOBBY, GAME };
 std::atomic<State> state;

@@ -3,7 +3,7 @@
 #include <variant>
 #include <limits>
 #include "messages.h"
-#include "config.h"
+#include "../config/config.h"
 
 // fk and fv invoked read another element from TCP stream.
 template<typename K, typename V>

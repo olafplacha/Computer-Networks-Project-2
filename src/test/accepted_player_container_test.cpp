@@ -2,7 +2,7 @@
 #include <thread>
 #include <cassert>
 #include <atomic>
-#include "accepted_player_container.h"
+#include "../concurrency/accepted_player_container.h"
 
 #define NUM_THREADS 3
 #define NUM_ADDS_PER_THREAD 1000

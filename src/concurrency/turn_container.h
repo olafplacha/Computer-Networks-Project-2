@@ -4,9 +4,9 @@
 #include <vector>
 #include <condition_variable>
 #include <mutex>
-#include "config.h"
-#include "messages.h"
-#include "game.h"
+#include "../config/config.h"
+#include "../network/messages.h"
+#include "../game_logic/game.h"
 
 class TurnContainer
 {

@@ -6,15 +6,15 @@
 #include <vector>
 #include <chrono>
 #include <shared_mutex>
-#include "connection_acceptor.h"
-#include "network_handler.h"
-#include "message_manager.h"
-#include "config.h"
-#include "parser.h"
-#include "accepted_player_container.h"
-#include "move_container.h"
-#include "turn_container.h"
-#include "game.h"
+#include "network/connection_acceptor.h"
+#include "network/network_handler.h"
+#include "network/message_manager.h"
+#include "config/config.h"
+#include "config/parser.h"
+#include "concurrency/accepted_player_container.h"
+#include "concurrency/move_container.h"
+#include "concurrency/turn_container.h"
+#include "game_logic/game.h"
 
 typedef std::unique_lock<std::shared_mutex>  WriteLock;
 typedef std::shared_lock<std::shared_mutex>  ReadLock;

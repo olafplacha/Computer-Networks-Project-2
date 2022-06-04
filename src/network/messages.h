@@ -8,7 +8,7 @@
 #include <set>
 #include <unordered_set>
 #include "network_handler.h"
-#include "parser.h"
+#include "../config/parser.h"
 
 enum class Direction : std::underlying_type_t<std::byte> { Up, Right, Down, Left };
 

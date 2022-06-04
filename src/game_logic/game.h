@@ -6,10 +6,10 @@
 #include <unordered_set>
 #include <unordered_map>
 #include <random>
-#include "config.h"
-#include "parser.h"
-#include "messages.h"
-#include "move_container.h"
+#include "../config/config.h"
+#include "../config/parser.h"
+#include "../network/messages.h"
+#include "../concurrency/move_container.h"
 
 class Game
 {

@@ -1,7 +1,7 @@
 #ifndef LOBBY_H
 #define LOBBY_H
 
-#include "messages.h"
+#include "../network/messages.h"
 
 class Lobby
 {

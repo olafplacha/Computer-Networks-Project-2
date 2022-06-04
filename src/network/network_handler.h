@@ -17,7 +17,7 @@
 #include <stdexcept>
 #include <cstring>
 #include <memory>
-#include "config.h"
+#include "../config/config.h"
 
 void convert_network_to_host_byte_order(uint8_t* buffer, size_t n);
 void convert_host_to_network_byte_order(uint8_t* buffer, size_t n);

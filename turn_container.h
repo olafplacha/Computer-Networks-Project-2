@@ -6,6 +6,7 @@
 #include <mutex>
 #include "config.h"
 #include "messages.h"
+#include "game.h"
 
 class TurnContainer
 {
@@ -18,9 +19,10 @@ public:
 
     Turn get_turn(types::turn_t);
 
-    void return_when_game_finished();
+    Game::score_map_t return_when_game_finished();
 
-    void mark_the_game_as_finished();
+    /* Let other threads know that the game is finished and pass them the score map. */
+    void mark_the_game_as_finished(const Game::score_map_t&);
 
     /* Delete copy constructor and copy assignment. */
     TurnContainer(TurnContainer const &) = delete;
@@ -30,6 +32,8 @@ private:
     std::mutex mutex;
     std::condition_variable condition_variable;
     std::vector<Turn> turns;
+    Game::score_map_t score_map;
+
     bool finished = false;
 };
 

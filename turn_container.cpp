@@ -21,19 +21,22 @@ Turn TurnContainer::get_turn(types::turn_t turn_id)
     return turns.at(turn_id);
 }
 
-void TurnContainer::return_when_game_finished()
+Game::score_map_t TurnContainer::return_when_game_finished()
 {
     std::unique_lock<std::mutex> lock_guard(mutex);
 
     // Wait until the game is finished.
     condition_variable.wait(lock_guard, [&]{ return finished; });
+
+    return score_map;
 }
 
-void TurnContainer::mark_the_game_as_finished()
+void TurnContainer::mark_the_game_as_finished(const Game::score_map_t& score_map_)
 {
     std::unique_lock<std::mutex> lock_guard(mutex);
 
     finished = true;
+    score_map = score_map_;
 
     // Notify waiting threads about the end of the game.
     condition_variable.notify_all();

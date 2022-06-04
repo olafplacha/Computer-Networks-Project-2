@@ -13,6 +13,9 @@
 
 class Game
 {
+public:
+    using score_map_t = std::map<types::player_id_t, types::score_t>;
+
 protected:
     void decrease_bomb_timers();
     void find_explosions(const Bomb&);
@@ -37,7 +40,7 @@ protected:
     std::unordered_map<types::bomb_id_t, Bomb> bombs;
 
     /* Score of each player. */
-    std::map<types::player_id_t, types::score_t> scores;
+    score_map_t scores;
     
     /* Auxiliary data structures, cleared after each turn. */
     std::set<types::player_id_t> turn_robots_destroyed;
@@ -73,6 +76,7 @@ public:
     Turn game_init();
 
     Turn apply_moves(MoveContainer&);
+    score_map_t get_score_map() const;
 
 private:
     bool is_position_legal(const Position&, types::coord_t, types::coord_t);

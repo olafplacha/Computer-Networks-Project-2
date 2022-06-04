@@ -166,8 +166,9 @@ void handle_tcp_stream_out(ServerMessageManager::ptr manager)
             }
             
             // Send message about the end of the game.
-            turn_container->return_when_game_finished();
-            GameEnded message_end; // TODO: add map with scores!
+            GameEnded message_end;
+            Game::score_map_t score_map = turn_container->return_when_game_finished();
+            message_end.scores = score_map;
             manager->send_client_message(message_end);
         }
     }
@@ -254,11 +255,14 @@ int main(int argc, char* argv[])
             turn_container->append_new_turn(turn);
         }
 
+        // Get the score map after the game;
+        Game::score_map_t score_map = game.get_score_map();
+
         // Prepare data structures for the next round.
         reset_shared();
 
         // Mark the last game as finished.    
-        turn_container->mark_the_game_as_finished();
+        turn_container->mark_the_game_as_finished(score_map);
     }
 
     thread_acceptor.join();

@@ -450,3 +450,8 @@ Turn GameServer::apply_moves(MoveContainer& move_container)
 
     return turn_message;
 }
+
+Game::score_map_t GameServer::get_score_map() const
+{
+    return scores;
+}

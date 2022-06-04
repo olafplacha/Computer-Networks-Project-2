@@ -29,7 +29,7 @@ types::player_id_t AcceptedPlayerContainer::add_new_player(const Player &player)
     // Notify waiting threads about the new player.
     condition_variable.notify_all();
 
-    return (types::player_id_t) accepted_players.size() - 1;
+    return (types::player_id_t) (accepted_players.size() - 1);
 }
 
 AcceptedPlayer AcceptedPlayerContainer::get_accepted_player(types::player_id_t id)

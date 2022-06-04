@@ -209,8 +209,8 @@ Turn GameServer::game_init()
         PlayerMoved event;
 
         Position position;
-        position.x = (types::size_xy_t) random() % size_x;
-        position.y = (types::size_xy_t) random() % size_y;
+        position.x = (types::size_xy_t) (random() % size_x);
+        position.y = (types::size_xy_t) (random() % size_y);
         player_positions.insert({id, position});
 
         event.id = id;
@@ -223,8 +223,8 @@ Turn GameServer::game_init()
         BlockPlaced event;
 
         Position position;
-        position.x = (types::size_xy_t) random() % size_x;
-        position.y = (types::size_xy_t) random() % size_y;
+        position.x = (types::size_xy_t) (random() % size_x);
+        position.y = (types::size_xy_t) (random() % size_y);
         blocks.insert(position);
 
         event.position = position;
@@ -246,8 +246,8 @@ bool GameServer::is_position_legal(const Position& pos, types::coord_t dx, types
 
     // Check if the target position is not blocked.
     Position target;
-    target.x = (types::size_xy_t) pos.x + dx;
-    target.y = (types::size_xy_t) pos.y + dy;
+    target.x = (types::size_xy_t) (pos.x + dx);
+    target.y = (types::size_xy_t) (pos.y + dy);
 
     if (blocks.find(target) != blocks.end()) {
         return false;
@@ -371,8 +371,8 @@ void GameServer::apply_player_move(types::player_id_t id, Turn& turn_message, co
 
     if (legal) {
         // Update player's position.
-        pos.x = (types::size_xy_t) pos.x + dx;
-        pos.y = (types::size_xy_t) pos.y + dy;
+        pos.x = (types::size_xy_t) (pos.x + dx);
+        pos.y = (types::size_xy_t) (pos.y + dy);
         player_positions.at(id) = pos;
 
         // And add it to the turn message.
@@ -422,8 +422,8 @@ Turn GameServer::apply_moves(MoveContainer& move_container)
         if (turn_robots_destroyed.find(i) != turn_robots_destroyed.end()) {
             // Recreate the player in random position.
             Position pos;
-            pos.x = (types::size_xy_t) random() % size_x;
-            pos.y = (types::size_xy_t) random() % size_y;
+            pos.x = (types::size_xy_t) (random() % size_x);
+            pos.y = (types::size_xy_t) (random() % size_y);
 
             player_positions.at(i) = pos;
 

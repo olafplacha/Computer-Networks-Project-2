@@ -83,7 +83,7 @@ void GameClient::apply_event(const BombExploded& event)
         find_explosions(it->second);
         bombs.erase(it);
     }
-    
+
     // Mark destroyed robots.
     for (const types::player_id_t& id : event.robots_destroyed) {
         turn_robots_destroyed.insert(id);
@@ -186,7 +186,7 @@ GameServer::GameServer(const options_server& op) : random(op.seed)
     game_length = op.game_length;
     bomb_timer = op.bomb_timer;
     explosion_radius = op.explosion_radius;
-    
+
     turn_duration = op.turn_duration;
     initial_blocks = op.initial_blocks;
     bomb_counter = 0;
@@ -196,7 +196,7 @@ GameServer::GameServer(const options_server& op) : random(op.seed)
     for (types::player_id_t i = 0; i < op.players_count; i++)
     {
         scores.insert({i, 0});
-    }   
+    }
 }
 
 Turn GameServer::game_init()
@@ -257,8 +257,8 @@ bool GameServer::is_position_legal(const Position& pos, types::coord_t dx, types
     return true;
 }
 
-void GameServer::handle_exploding_bomb(types::bomb_id_t bomb_id, Turn& turn_message) 
-{   
+void GameServer::handle_exploding_bomb(types::bomb_id_t bomb_id, Turn& turn_message)
+{
     // Get the exploding bomb.
     Bomb bomb = bombs.at(bomb_id);
 
@@ -345,25 +345,25 @@ void GameServer::apply_player_move(types::player_id_t id, Turn& turn_message, co
     types::coord_t dx, dy;
     switch (move.direction)
     {
-    case Direction::Up:
-        dx = 0;
-        dy = 1;
-        break;
+        case Direction::Up:
+            dx = 0;
+            dy = 1;
+            break;
 
-    case Direction::Right:
-        dx = 1;
-        dy = 0;
-        break;
+        case Direction::Right:
+            dx = 1;
+            dy = 0;
+            break;
 
-    case Direction::Down:
-        dx = 0;
-        dy = -1;
-        break;
-    
-    default:
-        dx = -1;
-        dy = 0;
-        break;
+        case Direction::Down:
+            dx = 0;
+            dy = -1;
+            break;
+
+        default:
+            dx = -1;
+            dy = 0;
+            break;
     }
 
     // Check if the target position is legal.
@@ -443,7 +443,7 @@ Turn GameServer::apply_moves(MoveContainer& move_container)
             }
         }
     }
-    
+
     update_blocks();
     update_scores();
     turn_message.turn = ++turn;

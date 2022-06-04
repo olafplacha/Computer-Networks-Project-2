@@ -31,7 +31,7 @@ public:
      */
     types::player_id_t add_new_player(const Player &);
 
-    /* Return message about specific accpeted player when it is ready. */
+    /* Return message about specific accpted player when it is ready. */
     AcceptedPlayer get_accepted_player(types::player_id_t);
 
     /* Delete copy constructor and copy assignment. */

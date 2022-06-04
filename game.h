@@ -41,14 +41,14 @@ protected:
 
     /* Score of each player. */
     score_map_t scores;
-    
+
     /* Auxiliary data structures, cleared after each turn. */
     std::set<types::player_id_t> turn_robots_destroyed;
     std::unordered_set<Position, Position::HashFunction> turn_blocks_destroyed;
     std::unordered_set<Position, Position::HashFunction> explosions;
 };
 
-class GameClient : public Game 
+class GameClient : public Game
 {
 public:
     /* Create the game based on the messages received from the server. */

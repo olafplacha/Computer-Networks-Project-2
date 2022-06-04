@@ -39,7 +39,7 @@ static bool required_specified_client(const required_client &required)
                   !required.port &&
                   !required.server_address &&
                   !required.server_port;
-                  
+
     return result;
 }
 
@@ -137,29 +137,29 @@ options_client parse_client(int argc, char *argv[])
         counter += 2;
         switch (opt)
         {
-        case options::GUI_ADDRESS:
-            parse_address(options.gui_address, options.gui_port, optarg, "GUI");
-            required.gui_address = false;
-            required.gui_port = false;
-            break;
-        case options::PLAYER_NAME:
-            options.player_name = optarg;
-            required.player_name = false;
-            break;
-        case options::PORT:
-            options.port = parse_numerical<types::port_t>(optarg, "Port");
-            required.port = false;
-            break;
-        case options::SERVER_ADDRESS:
-            parse_address(options.server_address, options.server_port, optarg, "Server");
-            required.server_address = false;
-            required.server_port = false;
-            break;
-        case options::HELP:
-            exit_help(argv[0], usage::CLIENT_HELP);
-            break;
-        default:
-            exit_wrong_param(argv[0], usage::CLIENT_USAGE);
+            case options::GUI_ADDRESS:
+                parse_address(options.gui_address, options.gui_port, optarg, "GUI");
+                required.gui_address = false;
+                required.gui_port = false;
+                break;
+            case options::PLAYER_NAME:
+                options.player_name = optarg;
+                required.player_name = false;
+                break;
+            case options::PORT:
+                options.port = parse_numerical<types::port_t>(optarg, "Port");
+                required.port = false;
+                break;
+            case options::SERVER_ADDRESS:
+                parse_address(options.server_address, options.server_port, optarg, "Server");
+                required.server_address = false;
+                required.server_port = false;
+                break;
+            case options::HELP:
+                exit_help(argv[0], usage::CLIENT_HELP);
+                break;
+            default:
+                exit_wrong_param(argv[0], usage::CLIENT_USAGE);
         }
     }
 
@@ -189,55 +189,55 @@ options_server parse_server(int argc, char *argv[])
         counter += 2;
         switch (opt)
         {
-        case options::BOMB_TIMER:
-            options.bomb_timer = parse_numerical<types::bomb_timer_t>(optarg, "Bomb timer");
-            required.bomb_timer = false;
-            break;
-        case options::PLAYER_COUNT:
-            options.players_count = parse_numerical<types::players_count_t>(optarg, "Players count");
-            required.players_count = false;
-            break;
-        case options::TURN_DURATION:
-            options.turn_duration = parse_numerical<types::turn_duration_t>(optarg, "Turn duration");
-            required.turn_duration = false;
-            break;
-        case options::EXPLOSION_RADIUS:
-            options.explosion_radius = parse_numerical<types::explosion_radius_t>(optarg, "Explosion radius");
-            required.explosion_radius = false;
-            break;
-        case options::INITIAL_BLOCKS:
-            options.initial_blocks = parse_numerical<types::initial_blocks_t>(optarg, "Initial blocks");
-            required.initial_blocks = false;
-            break;
-        case options::GAME_LENGTH:
-            options.game_length = parse_numerical<types::game_length_t>(optarg, "Game length");
-            required.game_length = false;
-            break;
-        case options::SERVER_NAME:
-            options.server_name = optarg;
-            required.server_name = false;
-            break;
-        case options::PORT:
-            options.port = parse_numerical<types::port_t>(optarg, "Port");
-            required.port = false;
-            break;
-        case options::SEED:
-            options.seed = parse_numerical<types::seed_t>(optarg, "Seed");
-            required.seed = false;
-            break;
-        case options::SIZE_X:
-            options.size_x = parse_numerical<types::size_xy_t>(optarg, "Size x");
-            required.size_x = false;
-            break;
-        case options::SIZE_Y:
-            options.size_y = parse_numerical<types::size_xy_t>(optarg, "Size y");
-            required.size_y = false;
-            break;
-        case options::HELP:
-            exit_help(argv[0], usage::SERVER_HELP);
-            break;
-        default:
-            exit_wrong_param(argv[0], usage::SERVER_USAGE);
+            case options::BOMB_TIMER:
+                options.bomb_timer = parse_numerical<types::bomb_timer_t>(optarg, "Bomb timer");
+                required.bomb_timer = false;
+                break;
+            case options::PLAYER_COUNT:
+                options.players_count = parse_numerical<types::players_count_t>(optarg, "Players count");
+                required.players_count = false;
+                break;
+            case options::TURN_DURATION:
+                options.turn_duration = parse_numerical<types::turn_duration_t>(optarg, "Turn duration");
+                required.turn_duration = false;
+                break;
+            case options::EXPLOSION_RADIUS:
+                options.explosion_radius = parse_numerical<types::explosion_radius_t>(optarg, "Explosion radius");
+                required.explosion_radius = false;
+                break;
+            case options::INITIAL_BLOCKS:
+                options.initial_blocks = parse_numerical<types::initial_blocks_t>(optarg, "Initial blocks");
+                required.initial_blocks = false;
+                break;
+            case options::GAME_LENGTH:
+                options.game_length = parse_numerical<types::game_length_t>(optarg, "Game length");
+                required.game_length = false;
+                break;
+            case options::SERVER_NAME:
+                options.server_name = optarg;
+                required.server_name = false;
+                break;
+            case options::PORT:
+                options.port = parse_numerical<types::port_t>(optarg, "Port");
+                required.port = false;
+                break;
+            case options::SEED:
+                options.seed = parse_numerical<types::seed_t>(optarg, "Seed");
+                required.seed = false;
+                break;
+            case options::SIZE_X:
+                options.size_x = parse_numerical<types::size_xy_t>(optarg, "Size x");
+                required.size_x = false;
+                break;
+            case options::SIZE_Y:
+                options.size_y = parse_numerical<types::size_xy_t>(optarg, "Size y");
+                required.size_y = false;
+                break;
+            case options::HELP:
+                exit_help(argv[0], usage::SERVER_HELP);
+                break;
+            default:
+                exit_wrong_param(argv[0], usage::SERVER_USAGE);
         }
     }
 

@@ -22,7 +22,7 @@ typedef std::shared_lock<std::shared_mutex>  ReadLock;
 options_server settings;
 
 struct shared_state
-{   
+{
     std::shared_mutex mutex;
     bool game_started;
     size_t game_version;
@@ -54,10 +54,10 @@ bool is_game_valid(size_t version)
     return shared.game_version == version;
 }
 
-void handle_tcp_stream_in(ServerMessageManager::ptr manager) 
+void handle_tcp_stream_in(ServerMessageManager::ptr manager)
 {
     ClientMessage msg;
-    
+
     // Pointers to shared data structures.
     AcceptedPlayerContainer::ptr accepted_players;
     MoveContainer::ptr move_container;
@@ -91,7 +91,7 @@ void handle_tcp_stream_in(ServerMessageManager::ptr manager)
             }
 
             if (std::holds_alternative<Join>(msg)) {
-                if (!joined_the_game) 
+                if (!joined_the_game)
                 {
                     Player player;
                     player.name = std::get<Join>(msg).name;
@@ -164,7 +164,7 @@ void handle_tcp_stream_out(ServerMessageManager::ptr manager)
                 Turn message = turn_container->get_turn(i);
                 manager->send_client_message(message);
             }
-            
+
             // Send message about the end of the game.
             GameEnded message_end;
             Game::score_map_t score_map = turn_container->return_when_game_finished();
@@ -183,14 +183,14 @@ void handle_tcp_stream_out(ServerMessageManager::ptr manager)
 void accept_new_connections(types::port_t port)
 {
     ConnectionAcceptor acceptor(port, TCP_BACKLOG_SIZE);
-    
+
     while (true)
     {
         // Accept another connection.
         try
         {
             std::cout << "Open for new connection\n";
-            
+
             // Wait for another connection request.
             int new_connection_fd = acceptor.accept_another_connection();
 
@@ -209,7 +209,7 @@ void accept_new_connections(types::port_t port)
         catch(const TCPAcceptError& e)
         {
             // Continue execution.
-            std::cerr << e.what() << '\n';   
+            std::cerr << e.what() << '\n';
         }
     }
 }
@@ -261,7 +261,7 @@ int main(int argc, char* argv[])
         // Prepare data structures for the next round.
         reset_shared();
 
-        // Mark the last game as finished.    
+        // Mark the last game as finished.
         turn_container->mark_the_game_as_finished(score_map);
     }
 

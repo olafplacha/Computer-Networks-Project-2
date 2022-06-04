@@ -1,6 +1,7 @@
 #include <iostream>
 #include <thread>
-#include <assert.h>
+#include <cassert>
+#include <atomic>
 #include "accepted_player_container.h"
 
 #define NUM_THREADS 3
@@ -44,12 +45,12 @@ int main()
 
     // Start the concurrent operations.
     start = true;
-    
+
     for (size_t i = 0; i < NUM_THREADS; i++)
     {
         threads.at(i).join();
     }
-    
+
     // It should return immediately.
     GameStarted m = container.return_when_target_players_joined();
     assert(m.players.size() == NUM_PLAYERS);

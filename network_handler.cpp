@@ -19,32 +19,32 @@ void convert_network_to_host_byte_order(uint8_t* buffer, size_t n)
 {
     switch (n)
     {
-    case 1:
-        // Nothing to be done.
-        return;
-    case 2:
-    {
-        uint16_t before = *(uint16_t *) buffer;
-        uint16_t after = ntohs(before);
-        *(uint16_t *) buffer = after;
-        return;
-    }
-    case 4:
-    {
-        uint32_t before = *(uint32_t *) buffer;
-        uint32_t after = ntohl(before);
-        *(uint32_t *) buffer = after;
-        return;
-    }
-    case 8:
-    {
-        uint64_t before = *(uint64_t *) buffer;
-        uint64_t after = be64toh(before);
-        *(uint64_t *) buffer = after;
-        return;
-    }
-    default:
-        throw std::invalid_argument("Invalid data type size for endianness convertion!");
+        case 1:
+            // Nothing to be done.
+            return;
+        case 2:
+        {
+            uint16_t before = *(uint16_t *) buffer;
+            uint16_t after = ntohs(before);
+            *(uint16_t *) buffer = after;
+            return;
+        }
+        case 4:
+        {
+            uint32_t before = *(uint32_t *) buffer;
+            uint32_t after = ntohl(before);
+            *(uint32_t *) buffer = after;
+            return;
+        }
+        case 8:
+        {
+            uint64_t before = *(uint64_t *) buffer;
+            uint64_t after = be64toh(before);
+            *(uint64_t *) buffer = after;
+            return;
+        }
+        default:
+            throw std::invalid_argument("Invalid data type size for endianness convertion!");
     }
 }
 
@@ -58,32 +58,32 @@ void convert_host_to_network_byte_order(uint8_t* buffer, size_t n)
 {
     switch (n)
     {
-    case 1:
-        // Nothing to be done.
-        return;
-    case 2:
-    {
-        uint16_t before = *(uint16_t *) buffer;
-        uint16_t after = htons(before);
-        *(uint16_t *) buffer = after;
-        return;
-    }
-    case 4:
-    {
-        uint32_t before = *(uint32_t *) buffer;
-        uint32_t after = htonl(before);
-        *(uint32_t *) buffer = after;
-        return;
-    }
-    case 8:
-    {
-        uint64_t before = *(uint64_t *) buffer;
-        uint64_t after = htobe64(before);
-        *(uint64_t *) buffer = after;
-        return;
-    }
-    default:
-        throw std::invalid_argument("Invalid data type size for endianness convertion!");
+        case 1:
+            // Nothing to be done.
+            return;
+        case 2:
+        {
+            uint16_t before = *(uint16_t *) buffer;
+            uint16_t after = htons(before);
+            *(uint16_t *) buffer = after;
+            return;
+        }
+        case 4:
+        {
+            uint32_t before = *(uint32_t *) buffer;
+            uint32_t after = htonl(before);
+            *(uint32_t *) buffer = after;
+            return;
+        }
+        case 8:
+        {
+            uint64_t before = *(uint64_t *) buffer;
+            uint64_t after = htobe64(before);
+            *(uint64_t *) buffer = after;
+            return;
+        }
+        default:
+            throw std::invalid_argument("Invalid data type size for endianness convertion!");
     }
 }
 
@@ -97,7 +97,7 @@ uint8_t* NetworkHandler::allocate_buffer_space(size_t n)
 }
 
 NetworkHandler::NetworkHandler(size_t recv_buff_size_, size_t send_buff_size_) :
-    recv_buff_size(recv_buff_size_), send_buff_size(send_buff_size_)
+        recv_buff_size(recv_buff_size_), send_buff_size(send_buff_size_)
 {
     recv_buff = allocate_buffer_space(recv_buff_size_);
     send_buff = allocate_buffer_space(send_buff_size_);
@@ -149,10 +149,10 @@ int TCPHandler::set_up_tcp_connection(std::string& address, types::port_t port)
 }
 
 TCPHandler::TCPHandler(int socket_fd_, size_t buff_size_) :
-    NetworkHandler(buff_size_, buff_size_), socket_fd(socket_fd_), recv_deque() {}
+        NetworkHandler(buff_size_, buff_size_), socket_fd(socket_fd_), recv_deque() {}
 
 TCPHandler::TCPHandler(std::string& address, types::port_t port, size_t buff_size_) :
-    NetworkHandler(buff_size_, buff_size_), recv_deque()
+        NetworkHandler(buff_size_, buff_size_), recv_deque()
 {
     socket_fd = set_up_tcp_connection(address, port);
 }

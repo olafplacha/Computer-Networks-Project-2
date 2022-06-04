@@ -54,7 +54,7 @@ static std::string read_string(TCPHandler& handler)
 }
 
 static void serialize_string(const std::string& s, std::function<void (types::str_len_t)> send_len,
-                      std::function<void (char)> send_char)
+                             std::function<void (char)> send_char)
 {
     // Truncate string if too long.
     types::str_len_t n = std::numeric_limits<types::str_len_t>::max();
@@ -72,7 +72,7 @@ static void serialize_string(const std::string& s, std::function<void (types::st
 
 template<typename K, typename V>
 static void serialize_map(const std::map<K, V>& m, std::function<void (types::map_len_t)> send_len,
-                   std::function<void (const K&)> send_key, std::function<void (const V&)> send_val)
+                          std::function<void (const K&)> send_key, std::function<void (const V&)> send_val)
 {
     // Check if the size of the map is supported.
     size_t size = m.size();
@@ -91,7 +91,7 @@ static void serialize_map(const std::map<K, V>& m, std::function<void (types::ma
 
 template<typename T>
 static void serialize_vector(const std::vector<T>& v, std::function<void (types::vec_len_t)> send_len,
-                      std::function<void (const T&)> send_element)
+                             std::function<void (const T&)> send_element)
 {
     // Check if the size of the vector is supported.
     size_t size = v.size();
@@ -120,11 +120,11 @@ Join::Join(TCPHandler& handler)
 void Join::serialize(TCPHandler& handler) const
 {
     serialize_string(name, [&](types::str_len_t t) {
-        handler.send_element<types::str_len_t>(t);
-    },
-    [&](char t) {
-        handler.send_element<char>(t);
-    });
+                         handler.send_element<types::str_len_t>(t);
+                     },
+                     [&](char t) {
+                         handler.send_element<char>(t);
+                     });
 }
 
 Move::Move(Direction direction_) : direction(direction_) {}
@@ -165,11 +165,11 @@ Hello::Hello(TCPHandler& handler)
 void Hello::serialize(TCPHandler& handler) const
 {
     serialize_string(server_name, [&](types::str_len_t t) {
-        handler.send_element<types::str_len_t>(t);
-    },
-    [&](char t) {
-        handler.send_element<char>(t);
-    });
+                         handler.send_element<types::str_len_t>(t);
+                     },
+                     [&](char t) {
+                         handler.send_element<char>(t);
+                     });
 
     handler.send_element<types::players_count_t>(players_count);
     handler.send_element<types::size_xy_t>(size_x);
@@ -224,9 +224,9 @@ void AcceptedPlayer::serialize(TCPHandler& handler) const
 GameStarted::GameStarted(TCPHandler& handler)
 {
     players = read_map<types::player_id_t, Player>(handler, [&]() { return handler.read_element<types::player_id_t>(); },
-    [&]() {
-        return Player(handler);
-    });
+                                                   [&]() {
+                                                       return Player(handler);
+                                                   });
 }
 
 void GameStarted::serialize(TCPHandler& handler) const
@@ -283,7 +283,7 @@ BombExploded::BombExploded(TCPHandler& handler)
 {
     id = handler.read_element<types::bomb_id_t>();
     robots_destroyed = read_vector<types::player_id_t>(handler,
-                       [&](){ return handler.read_element<types::player_id_t>(); });
+                                                       [&](){ return handler.read_element<types::player_id_t>(); });
     blocks_destroyed = read_vector<Position>(handler, [&]() {
         return Position(handler);
     });
@@ -340,16 +340,16 @@ static Event read_event(TCPHandler& handler)
 
     switch (message_id)
     {
-    case 0:
-        return BombPlaced(handler);
-    case 1:
-        return BombExploded(handler);
-    case 2:
-        return PlayerMoved(handler);
-    case 3:
-        return BlockPlaced(handler);
-    default:
-        throw std::runtime_error("Unknown message received from the server!");
+        case 0:
+            return BombPlaced(handler);
+        case 1:
+            return BombExploded(handler);
+        case 2:
+            return PlayerMoved(handler);
+        case 3:
+            return BlockPlaced(handler);
+        default:
+            throw std::runtime_error("Unknown message received from the server!");
     }
 }
 
@@ -376,8 +376,8 @@ void Turn::serialize(TCPHandler& handler) const
 GameEnded::GameEnded(TCPHandler& handler)
 {
     scores = read_map<types::player_id_t, types::score_t>(handler,
-             [&](){ return handler.read_element<types::player_id_t>(); }, 
-             [&](){ return handler.read_element<types::score_t>(); });
+                                                          [&](){ return handler.read_element<types::player_id_t>(); },
+                                                          [&](){ return handler.read_element<types::score_t>(); });
 }
 
 void GameEnded::serialize(TCPHandler& handler) const

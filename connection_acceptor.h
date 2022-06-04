@@ -19,7 +19,7 @@ public:
      * 
      * @return int Socket of the new TCP connection.
      */
-    int accept_another_connection();    
+    int accept_another_connection();
 
     ~ConnectionAcceptor();
 

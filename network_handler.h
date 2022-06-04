@@ -2,9 +2,9 @@
  * @author Olaf Placha
  * @brief This is a header file of a module that simplifies interaction with Linux
  * networking API. It implements a few operations on TCP and UDP Internet Protocols.
- * 
+ *
  * @copyright Copyright (c) 2022
- * 
+ *
  */
 
 #ifndef NETWORK_HANDLER_H

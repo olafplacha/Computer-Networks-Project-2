@@ -1,7 +1,7 @@
 #include "accepted_player_container.h"
 
 AcceptedPlayerContainer::AcceptedPlayerContainer(types::players_count_t target_players_count_) :
-    target_players_count(target_players_count_) {}
+        target_players_count(target_players_count_) {}
 
 GameStarted AcceptedPlayerContainer::return_when_target_players_joined()
 {
@@ -25,7 +25,7 @@ types::player_id_t AcceptedPlayerContainer::add_new_player(const Player &player)
 
     // Add a new player to the map.
     accepted_players.insert({accepted_players.size(), player});
-    
+
     // Notify waiting threads about the new player.
     condition_variable.notify_all();
 

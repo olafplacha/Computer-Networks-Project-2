@@ -19,7 +19,7 @@ public:
     MoveContainer(types::players_count_t);
 
     container_t atomic_snapshot_and_clear();
-    
+
     void update_slot(types::player_id_t, const ClientMessage&);
 
     /* Delete copy constructor and copy assignment. */

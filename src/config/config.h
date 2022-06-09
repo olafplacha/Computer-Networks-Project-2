@@ -47,7 +47,18 @@ namespace usage {
     const std::string SERVER_USAGE = std::string("-b <BOMB_TIMER> -c <PLAYERS_COUNT> -d <TURN_DURATION> ") +
                                      "-e <EXPLOSION_RADIUS> -k <INITIAL_BLOCKS> -l <GAME_LENGTH> -n <SERVER_NAME> " +
                                      "-p <PORT> [-s <SEED>] -x <SIZE_X> -y <SIZE_Y>\n";
-    const std::string SERVER_HELP = SERVER_USAGE + "\nTo be completed...\n";
+    const std::string SERVER_HELP = SERVER_USAGE + "\nOptions:\n" +
+                                                   "\t-b\tBomb timer.\n" +
+                                                   "\t-c\tNumber of players required for the game.\n" +
+                                                   "\t-d\tNumber of milliseconds per turn.\n" +
+                                                   "\t-e\tExplosion radius.\n" +
+                                                   "\t-k\tNumber of initial blocks.\n" +
+                                                   "\t-l\tGame length in turns.\n" +
+                                                   "\t-n\tServer name.\n" +
+                                                   "\t-p\tPort of the server.\n" +
+                                                   "\t-s\tRandom seed.\n" +
+                                                   "\t-x\tSize x in number of blocks.\n" +
+                                                   "\t-y\tSize y in number of blocks.\n";
 }
 
 namespace options {

@@ -36,7 +36,7 @@ void Game::find_explosions(const Bomb &bomb) {
 
 void Game::decrease_bomb_timers() {
     for (auto &[id, bomb]: bombs) {
-        bomb.timer -= 1;
+        bomb.timer = (types::bomb_timer_t) (bomb.timer - 1);
     }
 }
 

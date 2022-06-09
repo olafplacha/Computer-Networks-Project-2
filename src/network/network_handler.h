@@ -233,7 +233,7 @@ template<typename T>
 T UDPHandler::read_next_packet_element() {
     // Check if there is enough data left in the buffer.
     if (recv_buff + packet_size < recv_pointer + sizeof(T)) {
-        throw UDPError("Attemp to read data out of UDP packet's bound!");
+        throw UDPError("Attempt to read data out of UDP packet's bound!");
     }
 
     // Convert the endianness if needed.

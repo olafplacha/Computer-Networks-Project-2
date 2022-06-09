@@ -63,7 +63,7 @@ void handle_tcp_stream_in(ServerMessageManager::ptr manager) {
     bool joined_the_game = false;
 
     // Valid only if the client joined the most recent version of the game.
-    types::player_id_t player_id;
+    types::player_id_t player_id{};
 
     try {
         while (true) {

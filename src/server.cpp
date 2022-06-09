@@ -168,8 +168,6 @@ void accept_new_connections(types::port_t port) {
     while (true) {
         // Accept another connection.
         try {
-            std::cout << "Open for new connection\n";
-
             // Wait for another connection request.
             int new_connection_fd = acceptor.accept_another_connection();
 
@@ -182,8 +180,6 @@ void accept_new_connections(types::port_t port) {
             std::thread thread_out{[=] { handle_tcp_stream_out(manager); }};
             thread_in.detach();
             thread_out.detach();
-
-            std::cout << "New connection established\n";
         }
         catch (const TCPAcceptError &e) {
             // Continue execution.

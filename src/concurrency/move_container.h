@@ -1,3 +1,10 @@
+/**
+ * @author Olaf Placha
+ * @brief This module provides a shared container used for storing moves requested by the players.
+ * 
+ * @copyright Copyright (c) 2022
+ * 
+ */
 #ifndef MOVE_CONTAINER_H
 #define MOVE_CONTAINER_H
 
@@ -17,8 +24,17 @@ public:
 
     explicit MoveContainer(types::players_count_t);
 
+    /**
+     * @brief Atomically takes a snapshot of the container and resets it before the next round.
+     * 
+     * @return container_t - Snapshot of the container.
+     */
     container_t atomic_snapshot_and_clear();
 
+    /**
+     * @brief Puts the move requested by the player in the container.
+     * 
+     */
     void update_slot(types::player_id_t, const ClientMessage &);
 
     /* Delete copy constructor and copy assignment. */

@@ -1,3 +1,10 @@
+/**
+ * @author Olaf Placha
+ * @brief This module provides the standard of the message protocol.
+ * 
+ * @copyright Copyright (c) 2022
+ * 
+ */
 #ifndef MESSAGES_H
 #define MESSAGES_H
 

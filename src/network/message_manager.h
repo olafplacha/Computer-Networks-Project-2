@@ -1,9 +1,20 @@
+/**
+ * @author Olaf Placha
+ * @brief This module provides classes used for handling communication between server, clients and gui.
+ * 
+ * @copyright Copyright (c) 2022
+ * 
+ */
 #ifndef MESSAGE_MANAGER_H
 #define MESSAGE_MANAGER_H
 
 #include "network_handler.h"
 #include "messages.h"
 
+/**
+ * @brief This class handles all communication between the client and the server as well as between
+ * the client and the gui.
+ */
 class ClientMessageManager {
 public:
     ClientMessageManager(TCPHandler &, UDPHandler &);
@@ -11,12 +22,18 @@ public:
     /**
      * @brief Reads another message from the server.
      *
-     * @return ServerMessage Message from the server.
+     * @return ServerMessage - Message from the server.
      */
     ServerMessage read_server_message();
 
+    /**
+     * @brief Reads another message from the gui.
+     * 
+     * @return InputMessage - Message from the gui.
+     */
     InputMessage read_gui_message();
 
+    /* Below there are overloaded methods used for sending various message types. */
     void send_server_message(const Join &);
 
     void send_server_message(const PlaceBomb &);
@@ -41,14 +58,23 @@ private:
     UDPHandler &udp_handler;
 };
 
+/**
+ * @brief This class handles all communication between the server and the clients.
+ */
 class ServerMessageManager {
 public:
     using ptr = std::shared_ptr<ServerMessageManager>;
 
     explicit ServerMessageManager(TCPHandler::ptr &);
 
+    /**
+     * @brief Reads another message from the client.
+     * 
+     * @return ClientMessage - Message from the client.
+     */
     ClientMessage read_client_message();
 
+    /* Below there are overloaded methods used for sending various message types. */
     void send_client_message(const Hello &);
 
     void send_client_message(const AcceptedPlayer &);

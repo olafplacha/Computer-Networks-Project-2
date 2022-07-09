@@ -1,3 +1,11 @@
+/**
+ * @author Olaf Placha
+ * @brief This file provides configuration information about the game logic as well as 
+ * about the message protocol.
+ * 
+ * @copyright Copyright (c) 2022
+ * 
+ */
 #ifndef CONFIG_H
 #define CONFIG_H
 

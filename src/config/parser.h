@@ -1,3 +1,10 @@
+/**
+ * @author Olaf Placha
+ * @brief This module provides a parser used for reading client's and server's parameters.
+ * 
+ * @copyright Copyright (c) 2022
+ * 
+ */
 #ifndef PARSER_H
 #define PARSER_H
 

@@ -1,3 +1,10 @@
+/**
+ * @author Olaf Placha
+ * @brief This module provides a shared container used for maintaining a collection of accepted players.
+ * 
+ * @copyright Copyright (c) 2022
+ * 
+ */
 #ifndef ACCEPTED_PLAYER_CONTAINER_H
 #define ACCEPTED_PLAYER_CONTAINER_H
 
@@ -16,20 +23,29 @@ public:
 class AcceptedPlayerContainer {
 public:
     using ptr = std::shared_ptr<AcceptedPlayerContainer>;
-
+    
     explicit AcceptedPlayerContainer(types::players_count_t);
 
-    /* Return when enough players join, so that the game can be started. It returns no sooner than the game starts. */
+    /**
+     * @brief Returns when enough players join, so that the game can be started. 
+     * 
+     * @return GameStarted - Message containing all accepted players.
+     */
     GameStarted return_when_target_players_joined();
 
     /**
      * @brief Adds a new player to the container.
      *
-     * @throws RejectedPlayerException Throws if there is already a full set of players.
+     * @throws RejectedPlayerException - Throws if there is already a full set of players.
+     * @return GameStarted - Message containing all accepted players.
      */
     types::player_id_t add_new_player(const Player &);
 
-    /* Return message about specific accepted player when it is ready. */
+    /**
+     * @brief Returns a message about a player under the provided index.
+     * 
+     * @return AcceptedPlayer - Message containing information about the player.
+     */
     AcceptedPlayer get_accepted_player(types::player_id_t);
 
     /* Delete copy constructor and copy assignment. */

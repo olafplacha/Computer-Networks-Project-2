@@ -1,3 +1,5 @@
+READMY is still going to be updated...
+
 This is an implementation of a multiplayer Bomberman game.
 
 The project consists of the following modules:
@@ -6,7 +8,3 @@ The project consists of the following modules:
 - game_logic - It provides classes responsible for the game logic.
 - config - It provides configuration of the game logic and the message protocol.
 - test - It provides thread-safety tests.
-
-Lines count:
-- src - 365
-- src
